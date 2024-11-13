@@ -1,0 +1,19 @@
+aiosmtplib==3.0.1
+asyncpraw==7.7.1
+beautifulsoup4==4.12.3
+dnspython==2.6.1
+Flask==3.0.3
+Flask_Cors==4.0.1
+Flask-SocketIO==5.3.6
+flask_limiter==3.8.0
+google-search-results
+maigret==0.4.4
+python-whois==0.9.4
+requests-html==0.10.0
+search_engines @ https://github.com/soxoj/Search-Engines-Scraper/archive/refs/heads/master.zip
+Sublist3r==1.0
+termcolor==2.4.0
+yandex_search==0.3.2
+socid_extractor==0.0.26
+gunicorn==23.0.0
+eventlet==0.37.0

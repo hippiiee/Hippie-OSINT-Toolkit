@@ -1,0 +1,33 @@
+services:
+  frontend:
+    container_name: osint-toolkit-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - NODE_ENV=production
+        - NEXT_PUBLIC_BACKEND_API=http://localhost:5000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - osint-toolkit-network
+
+  backend:
+    image: python:3.10-slim
+    container_name: osint-toolkit-backend
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+    ports:
+      - "5000:5000"
+    command: >
+      sh -c "pip install -r requirements.txt &&
+             gunicorn --worker-class eventlet -w 1 --bind 0.0.0.0:5000 wsgi:app"
+    networks:
+      - osint-toolkit-network
+
+networks:
+  osint-toolkit-network:
+    driver: bridge
