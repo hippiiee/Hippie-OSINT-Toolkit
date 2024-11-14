@@ -152,8 +152,6 @@ export default function UsernameSearch() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardContent className="pt-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="username">Username</Label>
@@ -181,8 +179,6 @@ export default function UsernameSearch() {
               </div>
             </div>
           </form>
-        </CardContent>
-      </Card>
 
       {error && (
         <Alert variant="destructive">

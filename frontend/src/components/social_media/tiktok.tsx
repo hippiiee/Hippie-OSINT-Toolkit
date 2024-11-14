@@ -30,6 +30,7 @@ export default function TikTokTools() {
   useEffect(() => {
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API || 'http://localhost:5000'
     const newSocket = io(`${backendUrl}/tiktok`)
+    setSocket(newSocket)
 
     newSocket.on('connect', () => {
       console.log('Connected to WebSocket')
