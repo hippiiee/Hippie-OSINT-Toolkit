@@ -7,7 +7,7 @@ async def run_ghunt(email, socketio, namespace):
 
     try:
         result = subprocess.run(
-            ['ghunt', 'email', '--json', output_file, email],
+            ['/root/.local/bin/ghunt', 'email', '--json', output_file, email],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL
         )
@@ -24,4 +24,5 @@ async def run_ghunt(email, socketio, namespace):
             result = {"module": "ghunt", "found": email_info}
             socketio.emit('search_result', {'result': result}, namespace=namespace)
     except Exception as e:
-        socketio.emit('search_result', {'result': {'module': 'ghunt', 'error': 'failed to retrieve information'}}, namespace=namespace)
+        socketio.emit('search_result', {'result': {'module': 'ghunt', 'error': str(e)}}, namespace=namespace)
+        #socketio.emit('search_result', {'result': {'module': 'ghunt', 'error': 'failed to retrieve information'}}, namespace=namespace)
