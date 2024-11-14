@@ -224,23 +224,23 @@ export default function ImageSearch() {
                 <p>Few search engines that can do reverse image search:</p>
                 <ul>
                   <li><strong>Google Lens:</strong> The most well-known tool that not only finds similar images but can also identify objects, text, and landmarks within an image. It's particularly useful for identifying products or places.</li>
-                  <li><strong>TinEye:</strong> Specializes in finding exact matches and modified versions of an image. It's excellent for tracking the origin and spread of an image online.</li>
+                  <li><strong>TinEye:</strong> Specializes in finding exact matches and modified versions of an image. It's working well for tracking the origin and spread of an image online.</li>
                 </ul>
                 <OsintToolsGrid tools={[osintTools.googleLens, osintTools.tinEye]} />
                 <ul>
-                  <li><strong>Yandex:</strong> Often yields different results compared to Google, can do reverse person search, especially for images from Eastern Europe and Russia.</li>
+                  <li><strong>Yandex:</strong> Often yields different results compared to Google, can do reverse person search as well (especially for images from Eastern Europe and Russia).</li>
                 </ul>
                 <OsintToolCard tool={osintTools.yandex} />
 
                 <h2 id="identifying-location">Identifying Location</h2>
                 <p>Geolocating an image can help you to find context and verify claims about where a photo was taken.</p>
                 <ul>
-                  <li><strong>Overpass Turbo:</strong> A web-based data mining tool for OpenStreetMap. It allows users to write queries to extract specific geographic data, when you know how to use it it's a very powerful tool. For example, you could use it to find all fountains in a city to match a fountain in a photo.</li>
+                  <li><strong>Overpass Turbo:</strong> A web-based data mining tool for OpenStreetMap. It allows you to write queries to extract specific geographic data, when you know how to use it it's a very powerful tool. For example, you could use it to find all fountains in a city that are next to a park.</li>
                   <li><strong>Geospy.ai:</strong> An AI-powered tool that analyzes images to suggest possible locations based on visual characteristics like architecture, vegetation, and terrain. It's particularly useful for narrowing down the search area when you have limited initial information.</li>
                 </ul>
                 <OsintToolsGrid tools={[osintTools.overpassTurbo, osintTools.geospy]} />
                 <ul>
-                  <li><strong>SunCalc:</strong> This tool helps determine the position of the sun at any given time and location. It's useful for verifying the time and date of outdoor photos by analyzing shadows and lighting conditions.</li>
+                  <li><strong>SunCalc:</strong> This tool helps you to determine the position of the sun at any given time and location. It's useful for verifying the time and date of outdoor photos by analyzing shadows and lighting conditions.</li>
                 </ul>
                 <OsintToolCard tool={osintTools.sunCalc} />
 
@@ -248,21 +248,21 @@ export default function ImageSearch() {
                 <p>Don't forget to check the metadata of the image. Most social networks will remove the metadata when you upload the image, but a few will keep it. You can retrieve information such as camera make and model, date and time of capture, camera settings, and sometimes GPS coordinates.</p>
                 <ul>
                   <li><strong>exiftools:</strong> A command-line utility that can extract EXIF data from images.</li>
-                  <li><strong>Forensically:</strong> An online tool that can extract metadata from images, as well as perform other forensic analyses like error level analysis and noise analysis.</li>
+                  <li><strong>Forensically:</strong> An online tool that can extract metadata from images, as well as perform other forensic analyses.</li>
                 </ul>
                 <OsintToolCard tool={osintTools.forensically} />
 
                 <h2 id="facial-recognition">Facial Recognition</h2>
                 <p>Most reverse image search engines don't allow you to search by face, but you can use dedicated tools for that.</p>
                 <ul>
-                  <li><strong>PimEyes:</strong> A powerful facial recognition search engine that can find appearances of a person across the internet. It's important to use such tools responsibly and in compliance with privacy laws.</li>
+                  <li><strong>PimEyes:</strong> A powerful facial recognition search engine that can find appearances of a person across the internet. They have a few free tries that can help you to identify an identity.</li>
                 </ul>
                 <OsintToolCard tool={osintTools.pimEyes} />
 
                 <h2 id="miscellaneous-techniques">Miscellaneous Techniques</h2>
                 <p>Additional tools and techniques that can be useful in specific scenarios.</p>
                 <ul>
-                  <li><strong>Cleanup.pictures:</strong> This tool allows you to remove objects from images, which can be useful for isolating specific elements for further analysis. For instance, you could remove a distracting object to do a reverse image search on the background.</li>
+                  <li><strong>Cleanup.pictures:</strong> I you this tool to quickly remove objects from images, which can be useful for isolating specific elements for further analysis. For instance, you could remove a distracting object to do a reverse image search on the background.</li>
                 </ul>
                 <OsintToolCard tool={osintTools.cleanupPictures} />
               </div>
