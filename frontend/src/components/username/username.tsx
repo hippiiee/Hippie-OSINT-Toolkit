@@ -40,6 +40,7 @@ export default function UsernameSearch() {
   useEffect(() => {
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API || 'http://localhost:5000'
     const newSocket = io(`${backendUrl}/username`)
+    setSocket(newSocket)
 
     newSocket.on('connect', () => {
       console.log('Connected to WebSocket')
@@ -65,6 +66,12 @@ export default function UsernameSearch() {
       }
     })
 
+    newSocket.on('error', (error) => {
+      console.error('WebSocket error:', error)
+      setError('An error occurred while connecting to the server.')
+      setIsLoading(false)
+    })
+
     return () => {
       newSocket.disconnect()
     }
@@ -72,6 +79,10 @@ export default function UsernameSearch() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!username.trim()) {
+      setError('Please enter a username.')
+      return
+    }
     setIsLoading(true)
     setResults([])
     setError(null)
@@ -80,6 +91,9 @@ export default function UsernameSearch() {
 
     if (socket) {
       socket.emit('search_username', { input: username })
+    } else {
+      setError('Unable to connect to the server. Please try again later.')
+      setIsLoading(false)
     }
   }
 
@@ -138,6 +152,8 @@ export default function UsernameSearch() {
         </CardContent>
       </Card>
 
+      <Card>
+        <CardContent className="pt-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="username">Username</Label>
@@ -165,6 +181,8 @@ export default function UsernameSearch() {
               </div>
             </div>
           </form>
+        </CardContent>
+      </Card>
 
       {error && (
         <Alert variant="destructive">
