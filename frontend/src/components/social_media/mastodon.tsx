@@ -272,7 +272,7 @@ export default function MastodonTools() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-3xl font-bold">Mastodon</h2>
+      <h1 className="text-3xl font-bold">Mastodon</h1>
 
       <Card>
         <CardHeader>

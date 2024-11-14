@@ -94,7 +94,7 @@ export default function UsernameSearch() {
 
   return (
     <div className="space-y-6 w-full">
-      <h2 className="text-3xl font-bold">Username</h2>
+      <h1 className="text-3xl font-bold">Username</h1>
 
       <Card>
         <CardHeader>
@@ -138,8 +138,6 @@ export default function UsernameSearch() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardContent className="pt-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="username">Username</Label>
@@ -167,8 +165,6 @@ export default function UsernameSearch() {
               </div>
             </div>
           </form>
-        </CardContent>
-      </Card>
 
       {error && (
         <Alert variant="destructive">

@@ -308,8 +308,6 @@ export default function DomainToolsAndArticle() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardContent className="pt-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="domain">Domain</Label>
@@ -345,8 +343,6 @@ export default function DomainToolsAndArticle() {
               </div>
             </div>
           </form>
-        </CardContent>
-      </Card>
       
       {error && (
         <Alert variant="destructive">

@@ -123,7 +123,7 @@ export default function GoogleTools() {
 
   return (
     <div className="space-y-6 w-full">
-      <h2 className="text-3xl font-bold">Google</h2>
+      <h1 className="text-3xl font-bold">Google</h1>
 
       {selectedImage && (
         <ImageModal url={selectedImage} onClose={() => setSelectedImage(null)} />
@@ -159,8 +159,6 @@ export default function GoogleTools() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardContent className="pt-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Google Account Email</Label>
@@ -189,8 +187,6 @@ export default function GoogleTools() {
               </div>
             </div>
           </form>
-        </CardContent>
-      </Card>
 
       {isLoading && (
         <Card>
