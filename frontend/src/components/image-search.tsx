@@ -54,7 +54,7 @@ const OsintToolCard: React.FC<OsintToolCardProps> = ({ tool, isGrid = false }) =
       href={tool.url} 
       target="_blank" 
       rel="noopener noreferrer" 
-      className={`block bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden my-4 ${isGrid ? 'w-full' : 'w-1/2'}`}
+      className={`block bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden my-4 ${isGrid ? 'w-full' : 'w-full md:w-1/2'}`}
     >
       <div className="p-4 flex items-start space-x-4">
         <div className="flex-shrink-0">
