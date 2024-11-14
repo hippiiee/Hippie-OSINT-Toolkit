@@ -152,9 +152,9 @@ export default function DomainToolsAndArticle() {
     { id: 'cloud-storage', title: 'Cloud Storage Investigation', level: 1 },
     { id: 'tracking-connections', title: 'Tracking Connections', level: 1 },
     { id: 'subdomain-enumeration', title: 'Subdomain Enumeration', level: 1 },
-    { id: 'subdomain-enumeration', title: 'SSL Certificates Transparency', level: 2 },
-    { id: 'subdomain-enumeration', title: 'DNS Records', level: 2 },
-    { id: 'subdomain-enumeration', title: 'Google Dorks', level: 2 },
+    { id: 'subdomain-certificates', title: 'SSL Certificates Transparency', level: 2 },
+    { id: 'subdomain-dns', title: 'DNS Records', level: 2 },
+    { id: 'subdomain-dorks', title: 'Google Dorks', level: 2 },
     { id: 'advanced-search', title: 'Advanced Search Techniques', level: 1 },
     { id: 'data-breach', title: 'Data Breach Investigation', level: 1 },
   ]
@@ -175,7 +175,7 @@ export default function DomainToolsAndArticle() {
   }
 
   useEffect(() => {
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API || 'http://localhost:5000'
     const newSocket = io(`${backendUrl}/domain`)
     setSocket(newSocket)
 
