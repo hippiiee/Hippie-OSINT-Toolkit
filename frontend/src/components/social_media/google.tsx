@@ -77,7 +77,7 @@ export default function GoogleTools() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
 
   useEffect(() => {
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API || 'http://localhost:5000'
     const newSocket = io(`${backendUrl}/google`)
 
     newSocket.on('connect', () => {

@@ -38,7 +38,7 @@ export default function UsernameSearch() {
   const [progress, setProgress] = useState(0)
 
   useEffect(() => {
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API || 'http://localhost:5000'
     const newSocket = io(`${backendUrl}/username`)
 
     newSocket.on('connect', () => {

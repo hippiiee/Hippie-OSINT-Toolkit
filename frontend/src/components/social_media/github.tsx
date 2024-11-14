@@ -171,7 +171,7 @@ export default function GitHubTools() {
   ]
 
   useEffect(() => {
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API || 'http://localhost:5000'
     const newSocket = io(`${backendUrl}/github`)
     setSocket(newSocket)
 

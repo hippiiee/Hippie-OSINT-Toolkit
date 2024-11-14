@@ -73,7 +73,7 @@ export default function RedditTools() {
   const [socket, setSocket] = useState<Socket | null>(null)
 
   useEffect(() => {
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API || 'http://localhost:5000'
     const newSocket = io(`${backendUrl}/reddit`)
 
 
