@@ -15,16 +15,14 @@ services:
       - osint-toolkit-network
 
   backend:
-    image: python:3.10-slim
     container_name: osint-toolkit-backend
-    working_dir: /app
-    volumes:
-      - ./backend:/app
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        - GHUNT_CREDS_DATA=b64_credentials # retrieved in ~/.malfrats/ghunt/creds.m 
     ports:
       - "5000:5000"
-    command: >
-      sh -c "pip install -r requirements.txt &&
-             gunicorn --worker-class eventlet -w 1 --bind 0.0.0.0:5000 wsgi:app"
     networks:
       - osint-toolkit-network
 
