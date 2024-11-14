@@ -11,18 +11,14 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Skeleton } from "@/components/ui/skeleton"
 import { io, Socket } from 'socket.io-client'
 
-interface TikTokVideoInfo {
-  url: string;
-  publicationDate: string;
-}
-
 interface TikTokInfo {
-  tiktok: TikTokVideoInfo | null;
+  module: string;
+  timestamp: string;
 }
 
 export default function TikTokTools() {
   const [url, setUrl] = useState('')
-  const [results, setResults] = useState<TikTokInfo>({ tiktok: null })
+  const [results, setResults] = useState<TikTokInfo | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [socket, setSocket] = useState<Socket | null>(null)
@@ -41,9 +37,9 @@ export default function TikTokTools() {
 
       if (data.error) {
         setError(data.error)
-        setResults({ tiktok: null })
+        setResults(null)
       } else {
-        setResults({ tiktok: data.result })
+        setResults(data.result)
         setError(null)
       }
       setIsLoading(false)
@@ -57,7 +53,7 @@ export default function TikTokTools() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    setResults({ tiktok: null })
+    setResults(null)
     setError(null)
 
     if (socket) {
@@ -131,7 +127,7 @@ export default function TikTokTools() {
         </Alert>
       )}
       
-      {(isLoading || results.tiktok) && (
+      {(isLoading || results) && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center">
@@ -147,15 +143,15 @@ export default function TikTokTools() {
                     <Skeleton className="h-4 w-full mb-2" />
                     <Skeleton className="h-4 w-3/4" />
                   </>
-                ) : results.tiktok && (
+                ) : results && (
                   <>
                     <p className="flex items-center">
                       <Clock className="inline mr-2 h-4 w-4" />
-                      <span className="font-medium">Upload Date: </span> {formatDate(results.tiktok.publicationDate)}
+                      <span className="font-medium">Upload Date: </span> {formatDate(results.timestamp)}
                     </p>
                     <p className="flex items-center mt-2">
                       <ExternalLink className="inline mr-2 h-4 w-4" />
-                      <a href={results.tiktok.url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                      <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
                         View Video on TikTok
                       </a>
                     </p>
