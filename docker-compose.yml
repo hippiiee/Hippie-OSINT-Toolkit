@@ -21,6 +21,9 @@ services:
       dockerfile: Dockerfile
       args:
         - GHUNT_CREDS_DATA=b64_credentials # retrieved in ~/.malfrats/ghunt/creds.m 
+    environment:
+      - REDDIT_CLIENT_ID=1234
+      - REDDIT_CLIENT_SECRET=1234
     ports:
       - "5000:5000"
     networks:

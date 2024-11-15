@@ -1,13 +1,13 @@
 import asyncpraw
 import json
 import asyncio
-from asyncprawcore.exceptions import NotFound  # Import NotFound from asyncprawcore
+import os
+from asyncprawcore.exceptions import NotFound 
 
 async def run_reddit(username, socketio, namespace):
-    # TODO: remove creds from module
     reddit = asyncpraw.Reddit(
-        client_id='VQ0fhoQSv38POrJy_-DDVw',
-        client_secret='fYtpTJs1N4da5Gg1W0iEhENeu74Jrw',
+        client_id=os.environ.get('REDDIT_CLIENT_ID'),
+        client_secret=os.environ.get('REDDIT_CLIENT_SECRET'),
         user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.6312.58 Safari/537.36'
     )
 
