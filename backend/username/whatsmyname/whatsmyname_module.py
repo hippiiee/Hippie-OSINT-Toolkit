@@ -1,53 +1,56 @@
 import json
-import requests
-from concurrent.futures import ThreadPoolExecutor, as_completed, TimeoutError
-from socid_extractor import extract
+import eventlet
 import logging
+from socid_extractor import extract
 
-def check_site(site, username, headers, socketio, namespace, site_index, total_sites):
+logging.getLogger('urllib3').setLevel(logging.CRITICAL)
+
+def check_site(site, username, headers, socketio, namespace, site_index, total_sites, request_sid):
     site_name = site["name"]
     uri_check = site["uri_check"].format(account=username)
     try:
-        res = requests.get(uri_check, headers=headers, timeout=10)
-        estring_pos = site["e_string"] in res.text
-        estring_neg = site["m_string"] in res.text
+        with eventlet.Timeout(10):
+            http = eventlet.import_patched('urllib3').PoolManager()
+            res = http.request('GET', uri_check, headers=headers)
+            text = res.data.decode('utf-8')
+            
+            estring_pos = site["e_string"] in text
+            estring_neg = site["m_string"] in text
 
-        if res.status_code == site["e_code"] and estring_pos and not estring_neg:
-            result = {
-                'module': 'whatsmyname',
-                'type': 'site_found',
-                'data': {
-                    "site_name": site_name,
-                    "uri_check": uri_check,
-                    "progress": {
-                        "current": site_index + 1,
-                        "total": total_sites
+            if res.status == site["e_code"] and estring_pos and not estring_neg:
+                result = {
+                    'module': 'whatsmyname',
+                    'type': 'site_found',
+                    'data': {
+                        "site_name": site_name,
+                        "uri_check": uri_check,
+                        "progress": {
+                            "current": site_index + 1,
+                            "total": total_sites
+                        }
                     }
                 }
-            }
-            
-            try:
-                extracted_info = extract(res.text)
-                if extracted_info:
-                    serializable_info = {}
-                    for key, value in extracted_info.items():
-                        if isinstance(value, (str, int, float, bool, list, dict)):
-                            serializable_info[key] = value
-                        else:
-                            serializable_info[key] = str(value)
-                    result['data']['extracted_info'] = serializable_info
-            except Exception as e:
-                logging.error(f"Error extracting additional info: {str(e)}")
+                
+                try:
+                    extracted_info = extract(text)
+                    if extracted_info:
+                        serializable_info = {}
+                        for key, value in extracted_info.items():
+                            if isinstance(value, (str, int, float, bool, list, dict)):
+                                serializable_info[key] = value
+                            else:
+                                serializable_info[key] = str(value)
+                        result['data']['extracted_info'] = serializable_info
+                except Exception as e:
+                    logging.error(f"Error extracting additional info: {str(e)}")
 
-            # Emit result immediately when found
-            socketio.emit('search_result', {'result': result}, namespace=namespace)
-            return site_name, uri_check, result['data'].get('extracted_info')
+                socketio.emit('search_result', {'result': result}, namespace=namespace, room=request_sid)
+                return site_name, uri_check, result['data'].get('extracted_info')
     except Exception as e:
         logging.error(f"Error checking site {site_name}: {str(e)}")
-        pass
     return None
 
-async def run_whatsmyname(username, socketio, namespace, singlesearch=None, countsites=False, fulllist=False):
+def run_whatsmyname(username, socketio, namespace, singlesearch=None, countsites=False, fulllist=False, request_sid=None):
     headers = {
         "Accept": "text/html, application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         "accept-language": "en-US;q=0.9,en,q=0,8",
@@ -56,8 +59,9 @@ async def run_whatsmyname(username, socketio, namespace, singlesearch=None, coun
     }
     
     # Fetch wmn-data from WhatsMyName repository
-    response = requests.get("https://raw.githubusercontent.com/WebBreacher/WhatsMyName/main/wmn-data.json")
-    data = response.json()
+    http = eventlet.import_patched('urllib3').PoolManager()
+    response = http.request('GET', "https://raw.githubusercontent.com/WebBreacher/WhatsMyName/main/wmn-data.json")
+    data = json.loads(response.data.decode('utf-8'))
     sites = data["sites"]
     total_sites = len(sites)
     found_sites = []
@@ -71,41 +75,25 @@ async def run_whatsmyname(username, socketio, namespace, singlesearch=None, coun
                 'total_sites': total_sites
             }
         }
-    }, namespace=namespace)
+    }, namespace=namespace, room=request_sid)
 
-    try:
-        with ThreadPoolExecutor(max_workers=20) as executor:
-            futures = {
-                executor.submit(
-                    check_site, 
-                    site, 
-                    username, 
-                    headers, 
-                    socketio, 
-                    namespace, 
-                    idx, 
-                    total_sites
-                ): site for idx, site in enumerate(sites)
-            }
-
-            for future in as_completed(futures):
-                try:
-                    result = future.result()
-                    if result:
-                        site_name, uri_check, extracted_info = result
-                        site_data = {
-                            "site_name": site_name,
-                            "uri_check": uri_check
-                        }
-                        if extracted_info:
-                            site_data["extracted_info"] = extracted_info
-                        found_sites.append(site_data)
-                except Exception as e:
-                    logging.error(f"Error processing result: {str(e)}")
-                    continue
-
-    except TimeoutError:
-        pass
+    # Create a pool of greenlets
+    pool = eventlet.GreenPool(size=20)
+    for idx, site in enumerate(sites):
+        pool.spawn_n(
+            check_site,
+            site,
+            username,
+            headers,
+            socketio,
+            namespace,
+            idx,
+            total_sites,
+            request_sid
+        )
+    
+    # Wait for all greenlets to complete
+    pool.waitall()
 
     # Send completion message
     socketio.emit('search_result', {
@@ -118,4 +106,4 @@ async def run_whatsmyname(username, socketio, namespace, singlesearch=None, coun
                 'message': f"Search completed. Found {len(found_sites)} sites for user {username}."
             }
         }
-    }, namespace=namespace)
+    }, namespace=namespace, room=request_sid)
