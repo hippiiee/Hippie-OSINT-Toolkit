@@ -8,6 +8,8 @@ logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 def check_site(site, username, headers, socketio, namespace, site_index, total_sites, request_sid):
     site_name = site["name"]
     uri_check = site["uri_check"].format(account=username)
+    uri_pretty = site.get("uri_pretty", "").format(account=username)
+
     try:
         with eventlet.Timeout(10):
             http = eventlet.import_patched('urllib3').PoolManager()
@@ -24,6 +26,7 @@ def check_site(site, username, headers, socketio, namespace, site_index, total_s
                     'data': {
                         "site_name": site_name,
                         "uri_check": uri_check,
+                        "uri_pretty": uri_pretty,
                         "progress": {
                             "current": site_index + 1,
                             "total": total_sites
@@ -44,8 +47,10 @@ def check_site(site, username, headers, socketio, namespace, site_index, total_s
                 except Exception as e:
                     logging.error(f"Error extracting additional info: {str(e)}")
 
+                uri_to_use = uri_pretty if uri_pretty else uri_check
+
                 socketio.emit('search_result', {'result': result}, namespace=namespace, room=request_sid)
-                return site_name, uri_check, result['data'].get('extracted_info')
+                return site_name, uri_to_use, result['data'].get('extracted_info')
     except Exception as e:
         logging.error(f"Error checking site {site_name}: {str(e)}")
     return None
