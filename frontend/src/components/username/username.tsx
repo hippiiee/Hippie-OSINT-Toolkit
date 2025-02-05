@@ -19,6 +19,7 @@ interface SearchResult {
   data: {
     site_name: string;
     uri_check: string;
+    uri_pretty?: string;
     extracted_info?: Record<string, string | number | boolean>;
     progress?: {
       current: number;
@@ -152,33 +153,33 @@ export default function UsernameSearch() {
         </CardContent>
       </Card>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
-              <div className="flex space-x-2">
-                <Input
-                  id="username"
-                  placeholder="Enter a username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  required
-                />
-                <Button type="submit" disabled={isLoading}>
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Searching...
-                    </>
-                  ) : (
-                    <>
-                      <Search className="mr-2 h-4 w-4" />
-                      Search
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-          </form>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="username">Username</Label>
+          <div className="flex space-x-2">
+            <Input
+              id="username"
+              placeholder="Enter a username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Searching...
+                </>
+              ) : (
+                <>
+                  <Search className="mr-2 h-4 w-4" />
+                  Search
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      </form>
 
       {error && (
         <Alert variant="destructive">
@@ -213,13 +214,13 @@ export default function UsernameSearch() {
                     <CardContent className="p-4">
                       <div className="flex items-center space-x-4">
                         <Avatar className="h-12 w-12">
-                          <AvatarImage src={getFaviconUrl(result.data.uri_check) || ''} alt={result.data.site_name} />
+                          <AvatarImage src={getFaviconUrl(result.data.uri_pretty || result.data.uri_check) || ''} alt={result.data.site_name} />
                           <AvatarFallback><Globe className="h-6 w-6" /></AvatarFallback>
                         </Avatar>
                         <div className="flex-1 space-y-1">
                           <h3 className="text-lg font-semibold">{result.data.site_name}</h3>
                           <a 
-                            href={result.data.uri_check} 
+                            href={result.data.uri_pretty || result.data.uri_check} 
                             target="_blank" 
                             rel="noopener noreferrer" 
                             className="text-blue-500 hover:underline flex items-center"
