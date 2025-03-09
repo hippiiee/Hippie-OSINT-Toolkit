@@ -43,7 +43,7 @@ class OsintModule(ABC):
         """
         pass
         
-    def emit_result(self, socketio, namespace: str, data: Dict[str, Any]):
+    def emit_result(self, socketio, namespace: str, data: Dict[str, Any], room: str = None):
         """
         Emit a result through SocketIO.
         
@@ -51,6 +51,7 @@ class OsintModule(ABC):
             socketio: The SocketIO instance
             namespace: The namespace to emit to
             data: The data to emit
+            room: Optional room SID to emit to a specific client
         """
         try:
             # Ensure the module name is included in results
@@ -58,12 +59,12 @@ class OsintModule(ABC):
                 if 'module' not in data['result']:
                     data['result']['module'] = self.module_name
             
-            socketio.emit('search_result', data, namespace=namespace)
-            self.logger.debug(f"Emitted result to {namespace}")
+            socketio.emit('search_result', data, namespace=namespace, room=room)
+            self.logger.debug(f"Emitted result to {namespace}{' for room ' + room if room else ''}")
         except Exception as e:
             self.logger.error(f"Error emitting result: {e}")
     
-    def emit_error(self, socketio, namespace: str, error_message: str):
+    def emit_error(self, socketio, namespace: str, error_message: str, room: str = None):
         """
         Emit an error through SocketIO.
         
@@ -71,14 +72,15 @@ class OsintModule(ABC):
             socketio: The SocketIO instance
             namespace: The namespace to emit to
             error_message: The error message
+            room: Optional room SID to emit to a specific client
         """
         try:
-            socketio.emit('search_result', {'error': error_message}, namespace=namespace)
+            socketio.emit('search_result', {'error': error_message}, namespace=namespace, room=room)
             self.logger.error(f"Emitted error: {error_message}")
         except Exception as e:
             self.logger.error(f"Error emitting error: {e}")
     
-    def emit_progress(self, socketio, namespace: str, progress: int, message: str = ""):
+    def emit_progress(self, socketio, namespace: str, progress: int, message: str = "", room: str = None):
         """
         Emit search progress through SocketIO.
         
@@ -87,13 +89,14 @@ class OsintModule(ABC):
             namespace: The namespace to emit to
             progress: Progress percentage (0-100)
             message: Optional progress message
+            room: Optional room SID to emit to a specific client
         """
         try:
             socketio.emit('search_progress', {
                 'module': self.module_name,
                 'progress': progress,
                 'message': message
-            }, namespace=namespace)
+            }, namespace=namespace, room=room)
         except Exception as e:
             self.logger.error(f"Error emitting progress: {e}")
     

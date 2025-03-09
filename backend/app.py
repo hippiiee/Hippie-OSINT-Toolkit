@@ -259,7 +259,14 @@ def handle_search_username(username, cancel_event):
     cancel_previous_task('/username')
     # Create a new cancellation event and store it
     active_tasks['/username'] = cancel_event
-    run_async_task(whatsmyname_module.search, username, io, '/username', cancel_event=cancel_event)
+    start_background_task(
+        whatsmyname_module.search,
+        username,
+        io,
+        '/username',
+        cancel_event=cancel_event,
+        room=request.sid
+    )
 
 # Discord search handler
 @io.on('search_discord', namespace='/discord')
