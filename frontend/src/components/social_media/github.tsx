@@ -190,7 +190,7 @@ export default function GitHubTools() {
         const parsedData = data.result;
         if (parsedData.module === 'github') {
           console.log('Parsed Data:', parsedData)
-          setResults({ github: parsedData.results })
+          setResults({ github: parsedData.data })
           setError(null)
         }
       }

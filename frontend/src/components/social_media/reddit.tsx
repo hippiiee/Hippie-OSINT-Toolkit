@@ -93,25 +93,49 @@ export default function RedditTools() {
         setIsLoadingSubmissions(false)
         setIsLoadingComments(false)
       } else if (data.result) {
-        const parsedData = JSON.parse(data.result);
+        let parsedData;
+        
+        if (typeof data.result === 'string') {
+          try {
+            parsedData = JSON.parse(data.result);
+          } catch (e) {
+            console.error('Error parsing JSON:', e);
+            parsedData = data.result;
+          }
+        } else {
+          parsedData = data.result;
+        }
+        
+        console.log('Processed Data:', parsedData)
+        
         if (parsedData.module === 'reddit') {
-          console.log('Parsed Data:', parsedData)
           setResults(prevResults => ({
-            reddit: { ...prevResults.reddit, ...parsedData }
+            reddit: { 
+              ...prevResults.reddit, 
+              ...parsedData 
+            }
           }))
           setError(null)
           setIsLoading(false)
         }
       } else if (data.submissions) {
         setResults(prevResults => ({
-          reddit: { ...prevResults.reddit, submissions: data.submissions }
+          reddit: { 
+            ...prevResults.reddit, 
+            submissions: data.submissions 
+          }
         }))
         setIsLoadingSubmissions(false)
       } else if (data.comments) {
         setResults(prevResults => ({
-          reddit: { ...prevResults.reddit, comments: data.comments }
+          reddit: { 
+            ...prevResults.reddit, 
+            comments: data.comments 
+          }
         }))
         setIsLoadingComments(false)
+      } else if (data.message) {
+        console.log('Progress:', data.message)
       }
     })
 
