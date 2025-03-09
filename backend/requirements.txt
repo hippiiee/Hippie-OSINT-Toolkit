@@ -17,3 +17,9 @@ yandex_search==0.3.2
 socid_extractor==0.0.26
 gunicorn==23.0.0
 eventlet==0.37.0
+typing-extensions>=4.0.0
+pydantic>=2.0.0
+tenacity>=8.0.0
+ujson>=5.1.0
+cachetools>=5.0.0
+python-dateutil>=2.8.2
