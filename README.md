@@ -22,6 +22,7 @@ Different tools are available in the UI giving you access to these features:
   - Reddit account search (reddit API)
   - Github account search ([osgint](https://github.com/hippiiee/osgint))
   - Mastodon account and instance search ([masto](https://github.com/C3n7ral051nt4g3ncy/Masto))
+  - Discord user search
 - Images:
   - Google reverse image search
   - Yandex reverse image search
@@ -35,8 +36,6 @@ optionally, you can modify the `NEXT_PUBLIC_BACKEND_API` variable to run the bac
 ```bash
 docker compose up
 ```
-
-
 
 And that's it, you can now access the app on `http://localhost:3000`.
 
