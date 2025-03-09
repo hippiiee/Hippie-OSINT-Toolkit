@@ -45,12 +45,17 @@ export default function HippieOSINTToolkit() {
   }, [setTheme])
 
   const socialTools: ToolItem[] = [
-    { name: "TikTok", icon: FaTiktok, tool: "tiktok", description: "Find video upload timestamps and user information" },
-    { name: "Google", icon: FaGoogle, tool: "google", description: "Search Google user information" },
+    {
+      name: "TikTok",
+      icon: FaTiktok,
+      tool: "tiktok",
+      description: "Find video upload timestamps and user information",
+    },
+    { name: "Google", icon: FaGoogle, tool: "google", description: "Search Google account user information" },
     { name: "Reddit", icon: FaReddit, tool: "reddit", description: "Find Reddit user details" },
     { name: "GitHub", icon: FaGithub, tool: "github", description: "Discover GitHub user information" },
     { name: "Mastodon", icon: FaMastodon, tool: "mastodon", description: "Search Mastodon users and instances" },
-    { name: "Discord", icon: FaDiscord, tool: "discord", description: "Discord user and server information" },
+    { name: "Discord", icon: FaDiscord, tool: "discord", description: "Discord user information" },
   ]
 
   const mainTools = [
@@ -226,7 +231,7 @@ export default function HippieOSINTToolkit() {
     <TooltipProvider>
       <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-950 transition-all duration-300">
         {/* Header */}
-        <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 py-3 flex justify-between items-center transition-all duration-300 sticky top-0 z-20">
+        <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 py-3 flex justify-between items-center transition-all duration-300 sticky top-0 z-30">
           <div className="flex items-center">
             <Button variant="ghost" size="icon" className="mr-2 md:hidden" onClick={toggleSidebar}>
               {isSidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -285,13 +290,21 @@ export default function HippieOSINTToolkit() {
           </div>
         </header>
 
-        <div className="flex flex-1 overflow-hidden">
+        <div className="flex flex-1 overflow-hidden relative">
+          {/* Mobile sidebar overlay */}
+          {isSidebarOpen && (
+            <div
+              className="fixed inset-0 bg-black/20 dark:bg-black/50 z-20 md:hidden"
+              onClick={() => setIsSidebarOpen(false)}
+            />
+          )}
+
           {/* Sidebar */}
           <aside
             className={cn(
-              "bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 w-64 absolute md:relative inset-y-0 left-0 transform",
+              "bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 w-64 fixed md:relative inset-y-0 left-0 transform",
               isSidebarOpen ? "translate-x-0" : "-translate-x-full",
-              "md:translate-x-0 transition-transform duration-300 ease-in-out z-10 h-[calc(100vh-57px)] overflow-y-auto",
+              "md:translate-x-0 transition-transform duration-300 ease-in-out z-40 md:z-10 pt-0 mt-0 top-[57px] md:top-0 h-[calc(100vh-57px)] overflow-y-auto",
             )}
           >
             <nav className="p-4">
@@ -350,7 +363,7 @@ export default function HippieOSINTToolkit() {
                       rel="noopener noreferrer"
                       className="text-purple-600 dark:text-purple-400 hover:underline"
                     >
-                      @hippie
+                      @hiippiiie
                     </a>
                   </p>
                 </div>
