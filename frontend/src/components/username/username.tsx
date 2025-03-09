@@ -125,7 +125,7 @@ export default function UsernameSearch() {
 
     return () => {
       console.log("Component unmounting, cancelling search...")
-      newSocket.emit("cancel_search")
+      newSocket.emit("cancel_search_username")
       newSocket.disconnect()
     }
   }, [])
