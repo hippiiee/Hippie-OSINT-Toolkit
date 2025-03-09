@@ -172,10 +172,6 @@ def rate_limited_endpoint(validator=None, namespace=None):
             cancel_event = threading.Event()
             logger.info(f"Created new cancel_event for {namespace}, is_set = {cancel_event.is_set()}")
             
-            # Ne pas stocker l'événement d'annulation ici, laissons les gestionnaires le faire
-            # Cela évite un conflit avec cancel_previous_task
-            # active_tasks[namespace] = cancel_event
-            
             # Apply input validation if a validator was provided
             if validator:
                 input_value = None
@@ -467,7 +463,6 @@ async def run_parallel_search_email(email, io, cancel_event, namespace='/email')
     logger.info(f"Starting parallel email search for {email}")
     
     try:
-        # Add your email search implementation here
         io.emit('search_result', {'result': {'module': 'email', 'message': 'Email search functionality will be implemented soon.'}}, namespace=namespace)
     except Exception as e:
         logger.error(f"Error in email search: {str(e)}")
@@ -491,7 +486,6 @@ async def run_phonesearch(phone, io, cancel_event, namespace='/phone'):
     logger.info(f"Starting phone search for {phone}")
     
     try:
-        # Add your phone search implementation here
         io.emit('search_result', {'result': {'module': 'phone', 'message': 'Phone search functionality will be implemented soon.'}}, namespace=namespace)
     except Exception as e:
         logger.error(f"Error in phone search: {str(e)}")
