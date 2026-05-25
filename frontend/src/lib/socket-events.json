@@ -1,0 +1,21 @@
+{
+  "_comment": "Canonical socket.io event/namespace manifest. Keep this file in sync with backend/socket_events.json (CI runs scripts/check-socket-events.sh).",
+  "namespaces": {
+    "email":      { "search": "search_email" },
+    "domain":     { "search": "search_domain",     "cancel": "cancel_search_domain" },
+    "whois":      { "search": "search_whois",      "cancel": "cancel_search_whois" },
+    "subdomains": { "search": "search_subdomains", "cancel": "cancel_search_subdomains" },
+    "username":   { "search": "search_username",   "cancel": "cancel_search_username" },
+    "discord":    { "search": "search_discord",    "cancel": "cancel_search_discord" },
+    "github":     { "search": "search_github",     "cancel": "cancel_search_github" },
+    "google":     { "search": "search_google",     "cancel": "cancel_search_google" },
+    "reddit":     { "search": "search_reddit",     "cancel": "cancel_search_reddit" },
+    "mastodon":   { "searchUsername": "search_mastodon_username", "searchInstance": "search_mastodon_instance", "cancel": "cancel_search_mastodon" },
+    "tiktok":     { "searchVideo": "search_tiktok", "searchProfile": "search_tiktok_profile", "cancel": "cancel_search_tiktok" },
+    "phone":      { "search": "search_phone" }
+  },
+  "serverEvents": {
+    "result":   "search_result",
+    "progress": "search_progress"
+  }
+}
