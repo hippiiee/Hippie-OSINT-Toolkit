@@ -3,8 +3,9 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { Globe, ImageIcon, Users, Menu, X, Moon, Sun, Github, Search, ExternalLink, Sparkles } from "lucide-react"
-import { FaGithub, FaReddit, FaTiktok, FaMastodon, FaGoogle, FaDiscord } from "react-icons/fa"
+import { Globe, ImageIcon, Users, Menu, X, Moon, Sun, Search, ExternalLink, Sparkles } from "lucide-react"
+import { FaGithub as Github, FaReddit, FaTiktok, FaMastodon, FaGoogle, FaDiscord } from "react-icons/fa"
+const FaGithub = Github
 import ImageSearch from "./image-search"
 import DomainTools from "./domain-tools"
 import GitHubTools from "./social_media/github"

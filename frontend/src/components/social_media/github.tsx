@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Search, Github, Calendar, Mail, Link as LinkIcon, Loader2, AlertCircle, User, Users, BookOpen, FileText, ChevronRight, ExternalLink, Info } from 'lucide-react'
+import { Search, Calendar, Mail, Link as LinkIcon, Loader2, AlertCircle, User, Users, BookOpen, FileText, ChevronRight, ExternalLink, Info } from 'lucide-react'
+import { FaGithub as Github } from 'react-icons/fa'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
