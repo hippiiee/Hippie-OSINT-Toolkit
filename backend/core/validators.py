@@ -98,6 +98,31 @@ def is_valid_domain(domain: str) -> Tuple[bool, str]:
     return True, ""
 
 
+def is_valid_ip(ip: str) -> Tuple[bool, str]:
+    if not isinstance(ip, str) or not ip:
+        return False, "Invalid IP address"
+    try:
+        addr = ipaddress.ip_address(ip.strip())
+        if addr.is_private or addr.is_loopback or addr.is_link_local or addr.is_reserved or addr.is_multicast:
+            return False, "Only public IP addresses are allowed"
+        return True, ""
+    except ValueError:
+        return False, "Invalid IP address format"
+
+
+_BTC_RE = re.compile(r"^(1[a-km-zA-HJ-NP-Z1-9]{25,34}|3[a-km-zA-HJ-NP-Z1-9]{25,34}|bc1[a-zA-HJ-NP-Z0-9]{25,90})$")
+_ETH_RE = re.compile(r"^0x[0-9a-fA-F]{40}$")
+
+
+def is_valid_crypto_address(address: str) -> Tuple[bool, str]:
+    if not isinstance(address, str) or not address:
+        return False, "Crypto address is required"
+    address = address.strip()
+    if _BTC_RE.match(address) or _ETH_RE.match(address):
+        return True, ""
+    return False, "Invalid Bitcoin or Ethereum address format"
+
+
 def is_valid_url(url: str) -> Tuple[bool, str]:
     if not isinstance(url, str) or len(url) > 2048:
         return False, "Invalid URL format"

@@ -16,19 +16,27 @@ from flask_socketio import SocketIO
 
 from core import socket_events as se
 from core.validators import (
+    is_valid_crypto_address,
     is_valid_domain,
     is_valid_email,
+    is_valid_ip,
     is_valid_phone,
     is_valid_url,
     is_valid_username,
 )
 from domain.subdomains.crtsh_module import crtsh_module
 from domain.whois.whois_module import whois_module
+from domain.dns.dns_module import dns_module
+from network.ip.ip_module import ip_module
+from network.wayback.wayback_module import wayback_module
+from network.crypto.crypto_module import crypto_module
+from network.metadata.metadata_module import metadata_bp
 from social_networks.discord.discord_module import discord_module
 from social_networks.github.osgint_module import github_module
 from social_networks.google.ghunt_module import google_module
 from social_networks.mastodon.mastodon_module import mastodon_module
 from social_networks.reddit.reddit_module import run_reddit
+from social_networks.telegram.telegram_module import telegram_module
 from social_networks.tiktok.tiktok_module import tiktok_module
 from username.whatsmyname.whatsmyname_module import whatsmyname_module
 
@@ -52,6 +60,8 @@ io = SocketIO(
 )
 
 limiter = Limiter(get_remote_address, app=app, default_limits=["10 per minute"], storage_uri="memory://")
+
+app.register_blueprint(metadata_bp)
 
 
 # ---------------------------------------------------------------------------
@@ -243,6 +253,18 @@ def _whatsmyname_runner(value, _data, cancel_event, room):
     )
 
 
+def _wayback_runner(value, _data, cancel_event, room):
+    _spawn_sync(
+        wayback_module.search_sync,
+        value,
+        io,
+        se.ns("wayback"),
+        cancel_event=cancel_event,
+        room=room,
+        namespace=se.ns("wayback"),
+    )
+
+
 # ---------------------------------------------------------------------------
 # Handler table — single source of truth for what gets registered.
 # ---------------------------------------------------------------------------
@@ -272,6 +294,15 @@ SEARCH_HANDLERS = [
     ("mastodon",   "searchInstance", None,
         _async_runner(mastodon_module.search, se.ns("mastodon"), search_type="instance")),
     ("phone",      "search",         is_valid_phone,    _phone_runner),
+    ("dns",        "search",         is_valid_domain,
+        _async_runner(dns_module.search, se.ns("dns"))),
+    ("ip",         "search",         is_valid_ip,
+        _async_runner(ip_module.search, se.ns("ip"))),
+    ("wayback",    "search",         is_valid_domain,   _wayback_runner),
+    ("crypto",     "search",         is_valid_crypto_address,
+        _async_runner(crypto_module.search, se.ns("crypto"))),
+    ("telegram",   "search",         is_valid_username,
+        _async_runner(telegram_module.search, se.ns("telegram"))),
 ]
 
 

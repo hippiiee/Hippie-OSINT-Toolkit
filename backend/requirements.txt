@@ -24,3 +24,6 @@ ujson>=5.10.0
 cachetools>=5.5.0
 python-dateutil>=2.9.0
 tldextract>=5.3.0
+Pillow>=11.0.0
+pypdf>=5.0.0
+python-docx>=1.1.0

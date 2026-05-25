@@ -12,7 +12,12 @@
     "reddit":     { "search": "search_reddit",     "cancel": "cancel_search_reddit" },
     "mastodon":   { "searchUsername": "search_mastodon_username", "searchInstance": "search_mastodon_instance", "cancel": "cancel_search_mastodon" },
     "tiktok":     { "searchVideo": "search_tiktok", "searchProfile": "search_tiktok_profile", "cancel": "cancel_search_tiktok" },
-    "phone":      { "search": "search_phone" }
+    "phone":      { "search": "search_phone" },
+    "dns":        { "search": "search_dns",        "cancel": "cancel_search_dns" },
+    "ip":         { "search": "search_ip",          "cancel": "cancel_search_ip" },
+    "wayback":    { "search": "search_wayback",    "cancel": "cancel_search_wayback" },
+    "crypto":     { "search": "search_crypto",      "cancel": "cancel_search_crypto" },
+    "telegram":   { "search": "search_telegram",    "cancel": "cancel_search_telegram" }
   },
   "serverEvents": {
     "result":   "search_result",
