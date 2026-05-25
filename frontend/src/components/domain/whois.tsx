@@ -5,57 +5,82 @@ import { CalendarDays, Globe, Server, Shield, User, Building, MapPin } from 'luc
 interface WhoisResult {
   module: string;
   results: {
-    domain_name: string;
-    registrar: string;
-    whois_server: string;
+    domain_name: string | null;
+    registrar: string | null;
+    whois_server: string | null;
     referral_url: string | null;
-    updated_date: string | string[];
-    creation_date: string | string[];
-    expiration_date: string | string[];
-    name_servers: string[];
-    status: string[];
-    emails: string;
-    dnssec: string;
-    name: string;
+    updated_date: string | string[] | null;
+    creation_date: string | string[] | null;
+    expiration_date: string | string[] | null;
+    name_servers: string[] | string | null;
+    status: string[] | string | null;
+    emails: string | string[] | null;
+    dnssec: string | null;
+    name: string | null;
     org: string | null;
-    address: string;
-    city: string;
+    address: string | null;
+    city: string | null;
     state: string | null;
-    registrant_postal_code: string;
-    country: string;
+    registrant_postal_code: string | null;
+    country: string | null;
   };
 }
 
+const asArray = <T,>(v: T | T[] | null | undefined): T[] => {
+  if (v == null) return [];
+  return Array.isArray(v) ? v : [v];
+};
+
+const formatDate = (value: string | string[] | null | undefined): string => {
+  const raw = Array.isArray(value) ? value[0] : value;
+  if (!raw) return 'N/A';
+  const d = new Date(raw);
+  if (isNaN(d.getTime())) return 'N/A';
+  return d.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
+
+const text = (v: unknown, fallback = 'N/A'): string => {
+  if (v == null || v === '') return fallback;
+  if (Array.isArray(v)) return v.length ? v.join(', ') : fallback;
+  return String(v);
+};
+
 export default function WhoisResult({ data }: { data: WhoisResult }) {
   const { results } = data;
+  const nameServers = asArray<string>(results.name_servers);
+  const statuses = asArray<string>(results.status);
+  const emails = asArray<string>(results.emails);
 
-  const formatDate = (dateString: string | string[]) => {
-    const date = Array.isArray(dateString) ? dateString[0] : dateString;
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
+  const allNull = Object.values(results).every(v => v == null || (Array.isArray(v) && v.length === 0));
 
   return (
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="text-2xl font-bold flex items-center">
           <Globe className="mr-2" />
-          WHOIS Information for {results.domain_name}
+          WHOIS Information for {text(results.domain_name, 'this domain')}
         </CardTitle>
       </CardHeader>
       <CardContent className="grid gap-6">
+        {allNull && (
+          <p className="text-sm text-muted-foreground">
+            The WHOIS server did not return any data for this domain. Some TLDs (e.g. .es) restrict WHOIS lookups.
+          </p>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <h3 className="text-lg font-semibold mb-2 flex items-center">
               <Building className="mr-2" /> Registrar Details
             </h3>
-            <p><strong>Registrar:</strong> {results.registrar}</p>
-            <p><strong>WHOIS Server:</strong> {results.whois_server}</p>
+            <p><strong>Registrar:</strong> {text(results.registrar)}</p>
+            <p><strong>WHOIS Server:</strong> {text(results.whois_server)}</p>
           </div>
           <div>
             <h3 className="text-lg font-semibold mb-2 flex items-center">
@@ -67,50 +92,54 @@ export default function WhoisResult({ data }: { data: WhoisResult }) {
           </div>
         </div>
 
-        <div>
-          <h3 className="text-lg font-semibold mb-2 flex items-center">
-            <Server className="mr-2" /> Name Servers
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {results.name_servers.map((ns, index) => (
-              <Badge key={index} variant="secondary">{ns}</Badge>
-            ))}
+        {nameServers.length > 0 && (
+          <div>
+            <h3 className="text-lg font-semibold mb-2 flex items-center">
+              <Server className="mr-2" /> Name Servers
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {nameServers.map((ns, index) => (
+                <Badge key={index} variant="secondary">{ns}</Badge>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
-        <div>
-          <h3 className="text-lg font-semibold mb-2 flex items-center">
-            <Shield className="mr-2" /> Domain Status
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {results.status.map((status, index) => (
-              <Badge key={index} variant="outline">{status}</Badge>
-            ))}
+        {statuses.length > 0 && (
+          <div>
+            <h3 className="text-lg font-semibold mb-2 flex items-center">
+              <Shield className="mr-2" /> Domain Status
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {statuses.map((status, index) => (
+                <Badge key={index} variant="outline">{status}</Badge>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <h3 className="text-lg font-semibold mb-2 flex items-center">
               <User className="mr-2" /> Registrant Information
             </h3>
-            <p><strong>Name:</strong> {results.name}</p>
-            <p><strong>Organization:</strong> {results.org || 'N/A'}</p>
-            <p><strong>Email:</strong> {results.emails}</p>
+            <p><strong>Name:</strong> {text(results.name)}</p>
+            <p><strong>Organization:</strong> {text(results.org)}</p>
+            <p><strong>Email:</strong> {emails.length ? emails.join(', ') : 'N/A'}</p>
           </div>
           <div>
             <h3 className="text-lg font-semibold mb-2 flex items-center">
               <MapPin className="mr-2" /> Address
             </h3>
-            <p>{results.address}</p>
-            <p>{results.city}{results.state ? `, ${results.state}` : ''} {results.registrant_postal_code}</p>
-            <p>{results.country}</p>
+            <p>{text(results.address, '')}</p>
+            <p>{text(results.city, '')}{results.state ? `, ${results.state}` : ''} {text(results.registrant_postal_code, '')}</p>
+            <p>{text(results.country, '')}</p>
           </div>
         </div>
 
         <div>
           <h3 className="text-lg font-semibold mb-2">Additional Information</h3>
-          <p><strong>DNSSEC:</strong> {results.dnssec}</p>
+          <p><strong>DNSSEC:</strong> {text(results.dnssec)}</p>
         </div>
       </CardContent>
     </Card>

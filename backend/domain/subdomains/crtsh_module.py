@@ -39,7 +39,12 @@ class CrtshModule(OsintModule):
             
             self.logger.info("Processing results...")
             
-            subdomains = {entry['name_value'] for entry in response.json()}
+            subdomains = {
+                name.strip()
+                for entry in response.json()
+                for name in entry.get('name_value', '').split('\n')
+                if name.strip()
+            }
             sorted_subdomains = sorted(subdomains)
             
             result = {
