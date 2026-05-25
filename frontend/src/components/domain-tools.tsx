@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
-import { Search, Loader2, AlertCircle, Info, Globe, Server, ExternalLink, LinkIcon } from 'lucide-react'
+import { Search, Loader2, AlertCircle, Info, Globe, Server, ExternalLink, LinkIcon, History } from 'lucide-react'
 import { FaGoogle } from 'react-icons/fa'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,6 +14,8 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { io, Socket } from 'socket.io-client'
 import WhoisResult from './domain/whois'
 import CrtshResult from './domain/crtsh'
+import DnsResult from './domain/dns'
+import WaybackResult from './domain/wayback'
 import { ArticleImage } from '@/components/image'
 
 interface WhoisResult {
@@ -48,6 +50,8 @@ interface CrtshResult {
 interface DomainInfo {
   whois: WhoisResult | null;
   crtsh: CrtshResult | null;
+  dns: any | null;
+  wayback: any | null;
 }
 
 interface ArticleSection {
@@ -79,9 +83,8 @@ const ArticleNavigation: React.FC<{ sections: ArticleSection[] }> = ({ sections 
         <a
           key={section.id}
           href={`#${section.id}`}
-          className={`block py-2 px-3 text-sm rounded transition-colors ${
-            section.level === 1 ? 'font-semibold' : 'ml-4'
-          } hover:bg-gray-100 text-blue-600 hover:text-blue-800`}
+          className={`block py-2 px-3 text-sm rounded transition-colors ${section.level === 1 ? 'font-semibold' : 'ml-4'
+            } hover:bg-gray-100 text-blue-600 hover:text-blue-800`}
         >
           {section.title}
         </a>
@@ -92,10 +95,10 @@ const ArticleNavigation: React.FC<{ sections: ArticleSection[] }> = ({ sections 
 
 const OsintToolCard: React.FC<OsintToolCardProps> = ({ tool, isSingle = false }) => {
   return (
-    <a 
-      href={tool.url} 
-      target="_blank" 
-      rel="noopener noreferrer" 
+    <a
+      href={tool.url}
+      target="_blank"
+      rel="noopener noreferrer"
       className={`block bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden my-4 ${isSingle ? 'w-full md:w-1/2' : 'w-full'}`}
     >
       <div className="p-4 flex items-start space-x-4">
@@ -138,12 +141,16 @@ const OsintToolsGrid: React.FC<OsintToolsGridProps> = ({ tools }) => {
 export default function DomainToolsAndArticle() {
   const [domain, setDomain] = useState('')
   const [isValidInput, setIsValidInput] = useState(true)
-  const [results, setResults] = useState<DomainInfo>({ whois: null, crtsh: null })
+  const [results, setResults] = useState<DomainInfo>({ whois: null, crtsh: null, dns: null, wayback: null })
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [receivedModules, setReceivedModules] = useState<Set<string>>(new Set())
   const [socket, setSocket] = useState<Socket | null>(null)
+  const [dnsSocket, setDnsSocket] = useState<Socket | null>(null)
+  const [waybackSocket, setWaybackSocket] = useState<Socket | null>(null)
+  const [waybackLoading, setWaybackLoading] = useState(false)
   const [hasSearched, setHasSearched] = useState(false)
+  const [moduleErrors, setModuleErrors] = useState<Record<string, string>>({})
   const articleRef = useRef<HTMLDivElement>(null)
 
   const articleSections: ArticleSection[] = [
@@ -184,11 +191,16 @@ export default function DomainToolsAndArticle() {
     })
 
     newSocket.on('search_result', (data) => {
-      console.log('Received data from WebSocket:', data)
-
       if (data.error) {
-        setError(data.error)
-        setIsLoading(false)
+        const mod = data.result?.module
+        if (mod === 'whois' || (!data.result && !data.error?.includes('crtsh'))) {
+          setModuleErrors(prev => ({ ...prev, whois: data.error }))
+          setReceivedModules(prev => new Set(prev).add('whois'))
+        }
+        if (mod === 'crtsh') {
+          setModuleErrors(prev => ({ ...prev, crtsh: data.error }))
+          setReceivedModules(prev => new Set(prev).add('crtsh'))
+        }
       } else if (data.result) {
         if (data.result.module === 'whois') {
           setResults(prev => ({ ...prev, whois: data.result as WhoisResult }))
@@ -196,7 +208,6 @@ export default function DomainToolsAndArticle() {
           setResults(prev => ({ ...prev, crtsh: data.result as CrtshResult }))
         }
         setReceivedModules(prev => new Set(prev).add(data.result.module))
-        setError(null)
       }
     })
 
@@ -205,13 +216,41 @@ export default function DomainToolsAndArticle() {
       setReceivedModules(new Set())
     })
 
+    const newDnsSocket = io(`${backendUrl}/dns`)
+    setDnsSocket(newDnsSocket)
+
+    newDnsSocket.on('search_result', (data) => {
+      if (data.error) {
+        setModuleErrors(prev => ({ ...prev, dns: data.error }))
+      } else if (data.result) {
+        if (data.result.module === 'dns') {
+          setResults(prev => ({ ...prev, dns: data.result }))
+        }
+      }
+      setReceivedModules(prev => new Set(prev).add('dns'))
+    })
+
+    const newWaybackSocket = io(`${backendUrl}/wayback`)
+    setWaybackSocket(newWaybackSocket)
+
+    newWaybackSocket.on('search_result', (data) => {
+      if (data.error) {
+        setModuleErrors(prev => ({ ...prev, wayback: data.error }))
+      } else if (data.result && data.result.module === 'wayback') {
+        setResults(prev => ({ ...prev, wayback: data.result }))
+      }
+      setWaybackLoading(false)
+    })
+
     return () => {
       newSocket.disconnect()
+      newDnsSocket.disconnect()
+      newWaybackSocket.disconnect()
     }
   }, [])
 
   useEffect(() => {
-    if (receivedModules.has('whois') && receivedModules.has('crtsh')) {
+    if (receivedModules.has('whois') && receivedModules.has('crtsh') && receivedModules.has('dns')) {
       setIsLoading(false)
       setReceivedModules(new Set())
     }
@@ -223,15 +262,23 @@ export default function DomainToolsAndArticle() {
       setError("Please enter a valid domain name (e.g., example.com)");
       return;
     }
-    
+
     setIsLoading(true)
-    setResults({ whois: null, crtsh: null })
+    setResults({ whois: null, crtsh: null, dns: null, wayback: null })
     setError(null)
+    setModuleErrors({})
     setReceivedModules(new Set())
     setHasSearched(true)
 
     if (socket) {
       socket.emit('search_domain', { input: domain })
+    }
+    if (dnsSocket) {
+      dnsSocket.emit('search_dns', { input: domain })
+    }
+    if (waybackSocket) {
+      setWaybackLoading(true)
+      waybackSocket.emit('search_wayback', { input: domain })
     }
   }
 
@@ -304,46 +351,55 @@ export default function DomainToolsAndArticle() {
                 <li>List of subdomains</li>
               </ul>
             </div>
+            <div>
+              <h3 className="font-semibold mb-2">DNS</h3>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>All DNS record types (A, AAAA, MX, NS, TXT, CAA, SOA)</li>
+                <li>SPF/DKIM/DMARC email security analysis</li>
+                <li>SaaS service detection from TXT records</li>
+                <li>Zone transfer check</li>
+              </ul>
+            </div>
           </div>
         </CardContent>
       </Card>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="domain">Domain</Label>
-              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-                <div className="flex-grow">
-                  <Input
-                    id="domain"
-                    type="text"
-                    value={domain}
-                    onChange={handleDomainChange}
-                    placeholder="example.com"
-                    required
-                    className={`w-full ${!isValidInput ? 'border-red-500 focus:ring-red-500' : ''}`}
-                  />
-                  {!isValidInput && domain && (
-                    <p className="mt-1 text-sm text-red-500">
-                      Please enter a valid domain name (e.g., example.com)
-                    </p>
-                  )}
-                </div>
-                <Button 
-                  type="submit" 
-                  disabled={isLoading || !isValidInput} 
-                  className="w-full sm:w-auto"
-                >
-                  {isLoading ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Search className="mr-2 h-4 w-4" />
-                  )}
-                  {isLoading ? 'Searching...' : 'Search'}
-                </Button>
-              </div>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="domain">Domain</Label>
+          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+            <div className="flex-grow">
+              <Input
+                id="domain"
+                type="text"
+                value={domain}
+                onChange={handleDomainChange}
+                placeholder="example.com"
+                required
+                className={`w-full ${!isValidInput ? 'border-red-500 focus:ring-red-500' : ''}`}
+              />
+              {!isValidInput && domain && (
+                <p className="mt-1 text-sm text-red-500">
+                  Please enter a valid domain name (e.g., example.com)
+                </p>
+              )}
             </div>
-          </form>
-      
+            <Button
+              type="submit"
+              disabled={isLoading || !isValidInput}
+              className="w-full sm:w-auto"
+            >
+              {isLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Search className="mr-2 h-4 w-4" />
+              )}
+              {isLoading ? 'Searching...' : 'Search'}
+            </Button>
+          </div>
+        </div>
+      </form>
+
       {error && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
@@ -357,16 +413,30 @@ export default function DomainToolsAndArticle() {
           <TabsList className="w-full">
             <TabsTrigger value="whois" className="flex items-center flex-1">
               <Globe className="mr-2 h-4 w-4" />
-              WHOIS Information
+              WHOIS
+              {moduleErrors.whois && <AlertCircle className="ml-1 h-3 w-3 text-red-500" />}
             </TabsTrigger>
             <TabsTrigger value="crtsh" className="flex items-center flex-1">
               <Server className="mr-2 h-4 w-4" />
-              Subdomains (crt.sh)
+              Subdomains
+              {moduleErrors.crtsh && <AlertCircle className="ml-1 h-3 w-3 text-red-500" />}
+            </TabsTrigger>
+            <TabsTrigger value="dns" className="flex items-center flex-1">
+              <Server className="mr-2 h-4 w-4" />
+              DNS
+              {moduleErrors.dns && <AlertCircle className="ml-1 h-3 w-3 text-red-500" />}
+            </TabsTrigger>
+            <TabsTrigger value="wayback" className="flex items-center flex-1">
+              <History className="mr-2 h-4 w-4" />
+              Wayback
+              {moduleErrors.wayback && <AlertCircle className="ml-1 h-3 w-3 text-red-500" />}
             </TabsTrigger>
           </TabsList>
           <TabsContent value="whois" className="w-full">
             {isLoading ? (
               <WhoisSkeleton />
+            ) : moduleErrors.whois ? (
+              <Alert variant="destructive"><AlertCircle className="h-4 w-4" /><AlertTitle>WHOIS failed</AlertTitle><AlertDescription>{moduleErrors.whois}</AlertDescription></Alert>
             ) : results.whois ? (
               <WhoisResult data={results.whois} domain={domain} />
             ) : null}
@@ -374,8 +444,28 @@ export default function DomainToolsAndArticle() {
           <TabsContent value="crtsh" className="w-full">
             {isLoading ? (
               <CrtshSkeleton />
+            ) : moduleErrors.crtsh ? (
+              <Alert variant="destructive"><AlertCircle className="h-4 w-4" /><AlertTitle>Subdomains failed</AlertTitle><AlertDescription>{moduleErrors.crtsh}</AlertDescription></Alert>
             ) : results.crtsh ? (
               <CrtshResult data={results.crtsh} />
+            ) : null}
+          </TabsContent>
+          <TabsContent value="dns" className="w-full">
+            {isLoading ? (
+              <CrtshSkeleton />
+            ) : moduleErrors.dns ? (
+              <Alert variant="destructive"><AlertCircle className="h-4 w-4" /><AlertTitle>DNS Analysis failed</AlertTitle><AlertDescription>{moduleErrors.dns}</AlertDescription></Alert>
+            ) : results.dns ? (
+              <DnsResult data={results.dns} />
+            ) : null}
+          </TabsContent>
+          <TabsContent value="wayback" className="w-full">
+            {waybackLoading ? (
+              <CrtshSkeleton />
+            ) : moduleErrors.wayback ? (
+              <Alert variant="destructive"><AlertCircle className="h-4 w-4" /><AlertTitle>Wayback Machine failed</AlertTitle><AlertDescription>{moduleErrors.wayback}</AlertDescription></Alert>
+            ) : results.wayback ? (
+              <WaybackResult data={results.wayback} />
             ) : null}
           </TabsContent>
         </Tabs>
@@ -397,7 +487,7 @@ export default function DomainToolsAndArticle() {
                 <p>
                   WHOIS gives you details about domain registration dates, which can be interesting when you're investigating potential scams or cyber threats. Although privacy protection has made current WHOIS data less transparent, historical WHOIS records can still yield contact information like email addresses and phone numbers.
                 </p>
-                <OsintToolsGrid 
+                <OsintToolsGrid
                   tools={[
                     {
                       name: "WHOIS Lookup",
@@ -418,7 +508,7 @@ export default function DomainToolsAndArticle() {
                   width={800}
                   height={400}
                 />
-                <OsintToolsGrid 
+                <OsintToolsGrid
                   tools={[
                     {
                       name: "Wayback Machine",
@@ -439,7 +529,7 @@ export default function DomainToolsAndArticle() {
                   width={800}
                   height={400}
                 />
-                <OsintToolsGrid 
+                <OsintToolsGrid
                   tools={[
                     {
                       name: "OSINT.sh Buckets",
@@ -483,7 +573,7 @@ export default function DomainToolsAndArticle() {
                     height={400}
                   />
                 </p>
-                <OsintToolsGrid 
+                <OsintToolsGrid
                   tools={[
                     {
                       name: "OSINT.sh AdSense",
@@ -522,7 +612,7 @@ export default function DomainToolsAndArticle() {
                     <li>DNS records</li>
                   </ul>
                 </p>
-                <OsintToolsGrid 
+                <OsintToolsGrid
                   tools={[
                     {
                       name: "crt.sh",
@@ -553,7 +643,7 @@ export default function DomainToolsAndArticle() {
 
                 <h2 id="advanced-search" className="text-lg font-semibold mt-8">Find sensitive information through dorks</h2>
                 <p>
-                  Google dorking remains a powerful technique for discovering exposed documents, logs, and sensitive information. Here are a few dorks examples that you can use on a domain : 
+                  Google dorking remains a powerful technique for discovering exposed documents, logs, and sensitive information. Here are a few dorks examples that you can use on a domain :
                   <pre><code>
                     site:example.com filetype:pdf OR filetype:xlsx   # find pdf or xlsx files
                     <br />
@@ -563,7 +653,7 @@ export default function DomainToolsAndArticle() {
                   </code></pre>
                   If you are lazy to create a specific dork, you can use DorkGPT, an AI-powered tool that generates precise search queries.
                 </p>
-                <OsintToolsGrid 
+                <OsintToolsGrid
                   tools={[
                     {
                       name: "DorkGPT",
@@ -579,7 +669,7 @@ export default function DomainToolsAndArticle() {
                   Data breaches allows you to obtain sensitive information about people on a domain, it's pretty useful for red teaming or social engineering.
                   Leaked data can provide information about domain owners and associated accounts as well.
                 </p>
-                <OsintToolsGrid 
+                <OsintToolsGrid
                   tools={[
                     {
                       name: "Intelligence X",

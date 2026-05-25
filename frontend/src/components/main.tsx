@@ -3,8 +3,8 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { Globe, ImageIcon, Users, Menu, X, Moon, Sun, Search, ExternalLink, Sparkles } from "lucide-react"
-import { FaGithub as Github, FaReddit, FaTiktok, FaMastodon, FaGoogle, FaDiscord } from "react-icons/fa"
+import { Globe, ImageIcon, Users, Menu, X, Moon, Sun, Search, ExternalLink, Sparkles, Bitcoin, Send, Shield } from "lucide-react"
+import { FaGithub as Github, FaReddit, FaTiktok, FaMastodon, FaGoogle, FaDiscord, FaTelegram, FaBitcoin, FaEthereum } from "react-icons/fa"
 const FaGithub = Github
 import ImageSearch from "./image-search"
 import DomainTools from "./domain-tools"
@@ -14,6 +14,9 @@ import MastodonTools from "./social_media/mastodon"
 import TikTokTools from "./social_media/tiktok"
 import GoogleTools from "./social_media/google"
 import DiscordTools from "./social_media/discord"
+import TelegramTools from "./social_media/telegram"
+import IpTools from "./network/ip"
+import CryptoTools from "./network/crypto"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Separator } from "@/components/ui/separator"
@@ -57,12 +60,15 @@ export default function HippieOSINTToolkit() {
     { name: "GitHub", icon: FaGithub, tool: "github", description: "Discover GitHub user information" },
     { name: "Mastodon", icon: FaMastodon, tool: "mastodon", description: "Search Mastodon users and instances" },
     { name: "Discord", icon: FaDiscord, tool: "discord", description: "Discord user information" },
+    { name: "Telegram", icon: FaTelegram, tool: "telegram", description: "Telegram user and channel lookup" },
   ]
 
   const mainTools = [
     { name: "Domain", icon: Globe, tool: "domain", description: "Analyze domains and subdomains" },
     { name: "Image", icon: ImageIcon, tool: "image", description: "Reverse image search and analysis" },
     { name: "Username", icon: Users, tool: "username", description: "Search usernames across platforms" },
+    { name: "IP", icon: Shield, tool: "ip", description: "IP enrichment via Shodan InternetDB" },
+    { name: "Cryptocurrency", icon: Bitcoin, tool: "crypto", description: "Analyze Bitcoin and Ethereum addresses" },
   ]
 
   const renderTool = () => {
@@ -85,9 +91,15 @@ export default function HippieOSINTToolkit() {
         return <UsernameSearch />
       case "discord":
         return <DiscordTools />
+      case "telegram":
+        return <TelegramTools />
+      case "ip":
+        return <IpTools />
+      case "crypto":
+        return <CryptoTools />
       default:
         return (
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-6xl mx-auto">
             <div className="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30 rounded-2xl p-8 mb-8 text-center shadow-sm">
               <img
                 src="/hippie-osint-toolkit.png"
@@ -123,7 +135,7 @@ export default function HippieOSINTToolkit() {
             </div>
 
             <div className="mb-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {mainTools.map((tool) => (
                   <div
                     key={tool.tool}
@@ -146,7 +158,7 @@ export default function HippieOSINTToolkit() {
                 Social Networks
               </h3>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {socialTools.map((tool) => (
                   <div
                     key={tool.tool}
@@ -163,6 +175,7 @@ export default function HippieOSINTToolkit() {
                   </div>
                 ))}
               </div>
+
             </div>
 
             <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
@@ -308,7 +321,7 @@ export default function HippieOSINTToolkit() {
               "md:translate-x-0 transition-transform duration-300 ease-in-out z-40 md:z-10 pt-0 mt-0 top-[57px] md:top-0 h-[calc(100vh-57px)] overflow-y-auto",
             )}
           >
-            <nav className="p-4">
+            <nav className="p-4 flex flex-col min-h-full">
               <div className="mb-6">
                 {mainTools.map((tool) => (
                   <Tooltip key={tool.tool}>
@@ -354,7 +367,7 @@ export default function HippieOSINTToolkit() {
                 </div>
               </div>
 
-              <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-800">
+              <div className="mt-auto pt-6 border-t border-gray-200 dark:border-gray-800">
                 <div className="px-3 py-2">
                   <p className="text-xs text-gray-500 dark:text-gray-400">
                     Made with ❤️ by{" "}

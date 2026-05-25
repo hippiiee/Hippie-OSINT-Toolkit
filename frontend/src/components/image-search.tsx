@@ -1,11 +1,15 @@
 'use client'
 
-import { useState, useRef } from 'react'
-import { Search, ExternalLink, LinkIcon } from 'lucide-react'
+import React, { useState, useRef, useCallback } from 'react'
+import { Search, ExternalLink, LinkIcon, Upload, FileSearch, MapPin, Camera, Hash, Loader2, AlertCircle, Info, ImageIcon } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ArticleImage } from '@/components/image'
 
 interface ArticleSection {
@@ -95,6 +99,66 @@ const OsintToolsGrid: React.FC<OsintToolsGridProps> = ({ tools }) => {
 
 export default function ImageSearch() {
   const [imageUrl, setImageUrl] = useState('')
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [metadataResult, setMetadataResult] = useState<any>(null)
+  const [metadataError, setMetadataError] = useState<string | null>(null)
+  const [metadataLoading, setMetadataLoading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const allowedExtensions = ['.jpg', '.jpeg', '.png', '.tiff', '.tif', '.webp', '.pdf', '.docx']
+
+  const handleFileDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+    const file = e.dataTransfer.files[0]
+    if (file) setSelectedFile(file)
+  }, [])
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) setSelectedFile(file)
+  }
+
+  const handleMetadataExtract = async () => {
+    if (!selectedFile) return
+    const ext = '.' + selectedFile.name.split('.').pop()?.toLowerCase()
+    if (!allowedExtensions.includes(ext)) {
+      setMetadataError(`Unsupported file type. Supported: ${allowedExtensions.join(', ')}`)
+      return
+    }
+    if (selectedFile.size > 20 * 1024 * 1024) {
+      setMetadataError('File too large (max 20 MB)')
+      return
+    }
+
+    setMetadataLoading(true)
+    setMetadataError(null)
+    setMetadataResult(null)
+
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API || 'http://localhost:5000'
+      const formData = new FormData()
+      formData.append('file', selectedFile)
+      const resp = await fetch(`${backendUrl}/api/metadata/extract`, { method: 'POST', body: formData })
+      const data = await resp.json()
+      if (data.error) {
+        setMetadataError(data.error)
+      } else if (data.result) {
+        setMetadataResult(data.result.results)
+      }
+    } catch (err: any) {
+      setMetadataError(err.message || 'Failed to extract metadata')
+    } finally {
+      setMetadataLoading(false)
+    }
+  }
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+  }
 
   const articleSections: ArticleSection[] = [
     { id: 'reverse-image-search', title: 'Reverse Image Search', level: 1 },
@@ -183,30 +247,226 @@ export default function ImageSearch() {
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">Image Search</h1>
       
-      <Card>
-        <CardHeader>
-          <CardTitle>Reverse Image Search</CardTitle>
-        </CardHeader>
+      <Tabs defaultValue="reverse">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="reverse" className="flex items-center">
+            <ImageIcon className="mr-2 h-4 w-4" />
+            Reverse Image Search
+          </TabsTrigger>
+          <TabsTrigger value="metadata" className="flex items-center">
+            <FileSearch className="mr-2 h-4 w-4" />
+            Extract File Metadata
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="reverse">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="max-w-md mx-auto">
+                <Input
+                  type="url"
+                  placeholder="Enter image URL"
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  className="mb-4"
+                />
+              </div>
+              <div className="flex justify-center space-x-4 mt-4">
+                <Button onClick={() => performSearch('yandex')} disabled={!imageUrl} size="sm">
+                  <Search className="mr-2 h-4 w-4" /> Yandex
+                </Button>
+                <Button onClick={() => performSearch('google')} disabled={!imageUrl} size="sm">
+                  <Search className="mr-2 h-4 w-4" /> Google
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="metadata">
+          <Card>
         <CardContent>
-          <div className="max-w-md mx-auto">
-            <Input
-              type="url"
-              placeholder="Enter image URL"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              className="mb-4"
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            Upload an image, PDF, or DOCX file to extract embedded metadata such as EXIF data (GPS coordinates, camera info), author names, creation dates, and file hashes.
+          </p>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {['JPEG', 'PNG', 'TIFF', 'WebP', 'PDF', 'DOCX'].map(fmt => (
+              <Badge key={fmt} variant="secondary">{fmt}</Badge>
+            ))}
+          </div>
+
+          <div
+            className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
+              isDragging
+                ? 'border-purple-500 bg-purple-50 dark:bg-purple-950/20'
+                : 'border-gray-300 dark:border-gray-700 hover:border-purple-400'
+            }`}
+            onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={handleFileDrop}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {selectedFile ? selectedFile.name : 'Drop file here or click to browse'}
+            </p>
+            {selectedFile && (
+              <p className="text-xs text-gray-400 mt-1">{formatFileSize(selectedFile.size)}</p>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="hidden"
+              accept=".jpg,.jpeg,.png,.tiff,.tif,.webp,.pdf,.docx"
+              onChange={handleFileSelect}
             />
           </div>
-          <div className="flex justify-center space-x-4 mt-4">
-            <Button onClick={() => performSearch('yandex')} disabled={!imageUrl} size="sm">
-              <Search className="mr-2 h-4 w-4" /> Yandex
-            </Button>
-            <Button onClick={() => performSearch('google')} disabled={!imageUrl} size="sm">
-              <Search className="mr-2 h-4 w-4" /> Google
-            </Button>
-          </div>
+
+          <Button
+            onClick={handleMetadataExtract}
+            disabled={!selectedFile || metadataLoading}
+            className="mt-4"
+          >
+            {metadataLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+            {metadataLoading ? 'Extracting...' : 'Extract Metadata'}
+          </Button>
+
+          {metadataError && (
+            <Alert variant="destructive" className="mt-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{metadataError}</AlertDescription>
+            </Alert>
+          )}
+
+          {metadataResult && (
+            <div className="mt-6 space-y-4">
+              <Separator />
+              <h3 className="text-lg font-semibold">Results</h3>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <p className="text-sm text-gray-500">File</p>
+                  <p className="font-medium">{metadataResult.filename}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Format</p>
+                  <p className="font-medium">{metadataResult.format || metadataResult.file_type}</p>
+                </div>
+                {metadataResult.width && (
+                  <div>
+                    <p className="text-sm text-gray-500">Dimensions</p>
+                    <p className="font-medium">{metadataResult.width} x {metadataResult.height}</p>
+                  </div>
+                )}
+                {metadataResult.pages != null && (
+                  <div>
+                    <p className="text-sm text-gray-500">Pages</p>
+                    <p className="font-medium">{metadataResult.pages}</p>
+                  </div>
+                )}
+                <div>
+                  <p className="text-sm text-gray-500">File Size</p>
+                  <p className="font-medium">{formatFileSize(metadataResult.file_size)}</p>
+                </div>
+              </div>
+
+              {metadataResult.camera_info && Object.values(metadataResult.camera_info).some(Boolean) && (
+                <>
+                  <Separator />
+                  <h4 className="font-semibold flex items-center"><Camera className="mr-2 h-4 w-4" /> Camera Info</h4>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {Object.entries(metadataResult.camera_info).map(([key, val]) =>
+                      val ? (
+                        <div key={key}>
+                          <p className="text-sm text-gray-500">{key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</p>
+                          <p className="font-medium text-sm">{String(val)}</p>
+                        </div>
+                      ) : null
+                    )}
+                  </div>
+                </>
+              )}
+
+              {metadataResult.gps && (
+                <>
+                  <Separator />
+                  <h4 className="font-semibold flex items-center"><MapPin className="mr-2 h-4 w-4 text-red-500" /> GPS Location</h4>
+                  <p className="text-sm">{metadataResult.gps.latitude}, {metadataResult.gps.longitude}</p>
+                  <a
+                    href={metadataResult.gps.maps_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
+                  >
+                    View on Google Maps <ExternalLink className="ml-1 h-3 w-3" />
+                  </a>
+                </>
+              )}
+
+              {metadataResult.pdf_metadata && (
+                <>
+                  <Separator />
+                  <h4 className="font-semibold">PDF Metadata</h4>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {Object.entries(metadataResult.pdf_metadata).map(([key, val]) =>
+                      val ? (
+                        <div key={key}>
+                          <p className="text-sm text-gray-500">{key}</p>
+                          <p className="font-medium text-sm">{String(val)}</p>
+                        </div>
+                      ) : null
+                    )}
+                  </div>
+                </>
+              )}
+
+              {metadataResult.document_metadata && (
+                <>
+                  <Separator />
+                  <h4 className="font-semibold">Document Metadata</h4>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {Object.entries(metadataResult.document_metadata).map(([key, val]) =>
+                      val ? (
+                        <div key={key}>
+                          <p className="text-sm text-gray-500">{key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</p>
+                          <p className="font-medium text-sm">{String(val)}</p>
+                        </div>
+                      ) : null
+                    )}
+                  </div>
+                </>
+              )}
+
+              <Separator />
+              <h4 className="font-semibold flex items-center"><Hash className="mr-2 h-4 w-4" /> File Hashes</h4>
+              <div className="space-y-1">
+                <p className="text-sm"><span className="text-gray-500">MD5:</span> <code className="text-xs">{metadataResult.hashes?.md5 || metadataResult.md5}</code></p>
+                <p className="text-sm"><span className="text-gray-500">SHA256:</span> <code className="text-xs break-all">{metadataResult.hashes?.sha256 || metadataResult.sha256}</code></p>
+              </div>
+
+              {metadataResult.exif && Object.keys(metadataResult.exif).length > 0 && (
+                <>
+                  <Separator />
+                  <h4 className="font-semibold">All EXIF Fields</h4>
+                  <ScrollArea className="h-60 rounded border p-3">
+                    <div className="space-y-1">
+                      {Object.entries(metadataResult.exif).map(([key, val]) => (
+                        <div key={key} className="flex justify-between text-xs border-b border-gray-100 dark:border-gray-800 py-1">
+                          <span className="text-gray-500">{key}</span>
+                          <span className="text-right ml-4 max-w-[60%] truncate">{String(val)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                </>
+              )}
+            </div>
+          )}
         </CardContent>
-      </Card>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       <Card>
         <CardHeader>
