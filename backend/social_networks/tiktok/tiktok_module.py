@@ -27,29 +27,32 @@ class TikTokModule(OsintModule):
         self.logger.info(f"Starting TikTok analysis for query: {query}")
         cancel_event = kwargs.get('cancel_event')
         search_type = kwargs.get('search_type', 'video')  # Default to video URL analysis
-        
+        room = kwargs.get('room')
+
         try:
             # Check if the search was cancelled
             if self.handle_cancellation(cancel_event):
                 return {'cancelled': True}
-                
+
             if search_type == 'profile':
                 self.logger.info(f"Performing profile lookup for username: {query}")
-                return await self.profile_search(query, socketio, namespace, cancel_event=cancel_event)
+                return await self.profile_search(query, socketio, namespace, cancel_event=cancel_event, room=room)
             else:
                 self.logger.info("Analyzing TikTok URL...")
-                return await self.video_timestamp(query, socketio, namespace, cancel_event=cancel_event)
+                return await self.video_timestamp(query, socketio, namespace, cancel_event=cancel_event, room=room)
         
         except Exception as e:
             error_msg = f"Error in TikTok analysis: {str(e)}"
             self.logger.error(error_msg)
-            self.emit_error(socketio, namespace, error_msg)
+            self.emit_error(socketio, namespace, error_msg, room=room)
             return {'error': error_msg}
     
     async def video_timestamp(self, url: str, socketio, namespace: str, **kwargs) -> dict:
         """Extract timestamp from TikTok video URL"""
         cancel_event = kwargs.get('cancel_event')
-        
+        room = kwargs.get('room')
+
+
         try:
             # Check if the search was cancelled
             if self.handle_cancellation(cancel_event):
@@ -60,7 +63,7 @@ class TikTokModule(OsintModule):
             if urlid is None:
                 error_msg = "Invalid TikTok URL format"
                 self.logger.error(error_msg)
-                self.emit_error(socketio, namespace, error_msg)
+                self.emit_error(socketio, namespace, error_msg, room=room)
                 return {'error': error_msg}
             
             self.logger.info("Extracting timestamp...")
@@ -88,7 +91,7 @@ class TikTokModule(OsintModule):
             }
             
             # Emit result
-            self.emit_result(socketio, namespace, result)
+            self.emit_result(socketio, namespace, result, room=room)
             self.logger.info("TikTok video timestamp analysis completed")
             
             return result
@@ -96,13 +99,15 @@ class TikTokModule(OsintModule):
         except Exception as e:
             error_msg = f"Error in TikTok video analysis: {str(e)}"
             self.logger.error(error_msg)
-            self.emit_error(socketio, namespace, error_msg)
+            self.emit_error(socketio, namespace, error_msg, room=room)
             return {'error': error_msg}
     
     async def profile_search(self, username: str, socketio, namespace: str, **kwargs) -> dict:
         """Get TikTok profile information for a username"""
         cancel_event = kwargs.get('cancel_event')
-        
+        room = kwargs.get('room')
+
+
         try:
             # Check if the search was cancelled
             if self.handle_cancellation(cancel_event):
@@ -124,7 +129,7 @@ class TikTokModule(OsintModule):
             if response.status_code != 200:
                 error_msg = f"Error: HTTP {response.status_code} when retrieving TikTok profile"
                 self.logger.error(error_msg)
-                self.emit_error(socketio, namespace, error_msg)
+                self.emit_error(socketio, namespace, error_msg, room=room)
                 return {'error': error_msg}
             
             profile_data = response.json()
@@ -139,7 +144,7 @@ class TikTokModule(OsintModule):
             }
             
             # Emit result
-            self.emit_result(socketio, namespace, result)
+            self.emit_result(socketio, namespace, result, room=room)
             self.logger.info("TikTok profile lookup completed")
             
             return result
@@ -147,7 +152,7 @@ class TikTokModule(OsintModule):
         except Exception as e:
             error_msg = f"Error in TikTok profile lookup: {str(e)}"
             self.logger.error(error_msg)
-            self.emit_error(socketio, namespace, error_msg)
+            self.emit_error(socketio, namespace, error_msg, room=room)
             return {'error': error_msg}
     
     @staticmethod

@@ -25,7 +25,8 @@ class GitHubModule(OsintModule):
             Dict containing the search results
         """
         self.logger.info(f"Starting GitHub lookup for username: {username}")
-        
+        room = kwargs.get('room')
+
         try:
             # Execute the OSGINT script as a subprocess
             process = await asyncio.create_subprocess_exec(
@@ -38,14 +39,14 @@ class GitHubModule(OsintModule):
             if process.returncode != 0:
                 error_msg = stderr.decode()
                 self.logger.error(f"OSGINT error: {error_msg}")
-                self.emit_error(socketio, namespace, error_msg)
+                self.emit_error(socketio, namespace, error_msg, room=room)
                 return {'error': error_msg}
             
             # Parse the output
             parsed_output = self.parse_osgint_output(stdout.decode())
             if 'error' in parsed_output:
                 self.logger.error(f"Parse error: {parsed_output['error']}")
-                self.emit_error(socketio, namespace, parsed_output['error'])
+                self.emit_error(socketio, namespace, parsed_output['error'], room=room)
                 return parsed_output
             
             # Format result
@@ -57,7 +58,7 @@ class GitHubModule(OsintModule):
             }
             
             # Emit result
-            self.emit_result(socketio, namespace, result)
+            self.emit_result(socketio, namespace, result, room=room)
             
             self.logger.info("GitHub lookup completed")
             
@@ -66,7 +67,7 @@ class GitHubModule(OsintModule):
         except Exception as e:
             error_msg = f"Error in GitHub lookup: {str(e)}"
             self.logger.error(error_msg)
-            self.emit_error(socketio, namespace, error_msg)
+            self.emit_error(socketio, namespace, error_msg, room=room)
             return {'error': error_msg}
     
     def parse_osgint_output(self, output):

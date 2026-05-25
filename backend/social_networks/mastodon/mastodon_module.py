@@ -43,6 +43,7 @@ class MastodonModule(OsintModule):
         """
         search_type = kwargs.get('search_type', 'username')
         cancel_event = kwargs.get('cancel_event')
+        room = kwargs.get('room')
         self.logger.info(f"Starting Mastodon {search_type} lookup for: {query}")
         
         try:
@@ -98,7 +99,7 @@ class MastodonModule(OsintModule):
                 return {'cancelled': True}
                 
             # Emit result
-            self.emit_result(socketio, namespace, result)
+            self.emit_result(socketio, namespace, result, room=room)
             self.logger.info("Mastodon lookup completed")
             
             return result
@@ -110,7 +111,7 @@ class MastodonModule(OsintModule):
             error_msg = f"Error in Mastodon lookup: {str(e)}"
             self.logger.error(error_msg)
             self.logger.error(traceback.format_exc())
-            self.emit_error(socketio, namespace, error_msg)
+            self.emit_error(socketio, namespace, error_msg, room=room)
             return {'error': error_msg}
     
     async def instance_search(self, instance, cancel_event=None):

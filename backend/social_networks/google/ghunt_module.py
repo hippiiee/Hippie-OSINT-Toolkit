@@ -26,7 +26,8 @@ class GoogleModule(OsintModule):
             Dict containing the search results
         """
         self.logger.info(f"Starting GHunt lookup for email: {email}")
-        
+        room = kwargs.get('room')
+
         try:
             self.logger.info("Executing GHunt for Google account...")
             
@@ -47,7 +48,7 @@ class GoogleModule(OsintModule):
             if process.returncode != 0:
                 error_msg = "Failed to retrieve information from Google"
                 self.logger.error(f"GHunt error: {error_msg}")
-                self.emit_error(socketio, namespace, error_msg)
+                self.emit_error(socketio, namespace, error_msg, room=room)
                 return {'error': error_msg}
             
             # Read the output file
@@ -66,7 +67,7 @@ class GoogleModule(OsintModule):
                         'found': email_info
                     }
                 }
-                self.emit_result(socketio, namespace, result)
+                self.emit_result(socketio, namespace, result, room=room)
                 
                 self.logger.info("Google account lookup completed")
                 
@@ -74,13 +75,13 @@ class GoogleModule(OsintModule):
             except (json.JSONDecodeError, FileNotFoundError) as e:
                 error_msg = f"Failed to parse GHunt output: {str(e)}"
                 self.logger.error(error_msg)
-                self.emit_error(socketio, namespace, error_msg)
+                self.emit_error(socketio, namespace, error_msg, room=room)
                 return {'error': error_msg}
                 
         except Exception as e:
             error_msg = f"Error in Google lookup: {str(e)}"
             self.logger.error(error_msg)
-            self.emit_error(socketio, namespace, error_msg)
+            self.emit_error(socketio, namespace, error_msg, room=room)
             
             # Clean up the output file if it exists
             if os.path.exists(output_file):

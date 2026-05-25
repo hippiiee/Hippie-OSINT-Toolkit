@@ -23,7 +23,8 @@ class CrtshModule(OsintModule):
             Dict containing the search results
         """
         self.logger.info(f"Starting crt.sh lookup for domain: {domain}")
-        
+        room = kwargs.get('room')
+
         try:
             self.logger.info("Contacting crt.sh API...")
             
@@ -49,7 +50,7 @@ class CrtshModule(OsintModule):
             }
             
             # Emit result
-            self.emit_result(socketio, namespace, result)
+            self.emit_result(socketio, namespace, result, room=room)
             self.logger.info("crt.sh lookup completed")
             
             return result
@@ -57,7 +58,7 @@ class CrtshModule(OsintModule):
         except requests.exceptions.RequestException as e:
             error_msg = f"Error in crt.sh lookup: {str(e)}"
             self.logger.error(error_msg)
-            self.emit_error(socketio, namespace, error_msg)
+            self.emit_error(socketio, namespace, error_msg, room=room)
             return {'error': error_msg}
 
 

@@ -36,6 +36,7 @@ class RedditModule(OsintModule):
         cancel_event = kwargs.get('cancel_event')
         submission_limit = kwargs.get('submission_limit', 5)
         comment_limit = kwargs.get('comment_limit', 5)
+        room = kwargs.get('room')
         
         try:
             # Check for cancellation
@@ -58,7 +59,7 @@ class RedditModule(OsintModule):
 
             # Check if the user exists
             if user.name is None:
-                self.emit_error(socketio, namespace, "User does not exist.")
+                self.emit_error(socketio, namespace, "User does not exist.", room=room)
                 return {'error': 'User does not exist.'}
 
             user_info = {
@@ -89,7 +90,7 @@ class RedditModule(OsintModule):
             }
 
             # Send profile information via WebSocket
-            self.emit_result(socketio, namespace, user_info)
+            self.emit_result(socketio, namespace, user_info, room=room)
             
             # Check for cancellation
             if self.handle_cancellation(cancel_event):
@@ -164,11 +165,11 @@ class RedditModule(OsintModule):
             
             # Save submissions to result and emit
             user_info['result']['submissions'] = submissions
-            self.emit_result(socketio, namespace, {'submissions': submissions})
+            self.emit_result(socketio, namespace, {'submissions': submissions}, room=room)
             
             # Save comments to result and emit
             user_info['result']['comments'] = comments
-            self.emit_result(socketio, namespace, {'comments': comments})
+            self.emit_result(socketio, namespace, {'comments': comments}, room=room)
             
             self.emit_progress(socketio, namespace, "Completed Reddit data collection.")
             
@@ -177,12 +178,12 @@ class RedditModule(OsintModule):
         except NotFound:
             error_msg = 'User does not exist.'
             self.logger.warning(f"Reddit user not found: {username}")
-            self.emit_error(socketio, namespace, error_msg)
+            self.emit_error(socketio, namespace, error_msg, room=room)
             return {'error': error_msg}
         except Exception as e:
             error_msg = f"Error in Reddit lookup: {str(e)}"
             self.logger.error(error_msg)
-            self.emit_error(socketio, namespace, str(e))
+            self.emit_error(socketio, namespace, str(e), room=room)
             return {'error': error_msg}
     
     async def get_link_title(self, comment):
@@ -208,13 +209,14 @@ class RedditModule(OsintModule):
 reddit_module = RedditModule()
 
 # Legacy function for backwards compatibility
-async def run_reddit(username, socketio, namespace, cancel_event=None, submission_limit=5, comment_limit=5):
+async def run_reddit(username, socketio, namespace, cancel_event=None, submission_limit=5, comment_limit=5, room=None):
     """Legacy function to maintain backwards compatibility"""
     return await reddit_module.search(
-        username, 
-        socketio, 
-        namespace, 
+        username,
+        socketio,
+        namespace,
         cancel_event=cancel_event,
         submission_limit=submission_limit,
-        comment_limit=comment_limit
+        comment_limit=comment_limit,
+        room=room,
     )

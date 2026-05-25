@@ -24,7 +24,8 @@ class WhoisModule(OsintModule):
             Dict containing the WHOIS information
         """
         self.logger.info(f"Starting WHOIS lookup for domain: {domain}")
-        
+        room = kwargs.get('room')
+
         try:
             self.logger.info("Retrieving WHOIS information...")
             
@@ -57,7 +58,7 @@ class WhoisModule(OsintModule):
             }
             
             # Emit result
-            self.emit_result(socketio, namespace, result)
+            self.emit_result(socketio, namespace, result, room=room)
             self.logger.info("WHOIS lookup completed")
             
             return result
@@ -65,7 +66,7 @@ class WhoisModule(OsintModule):
         except Exception as e:
             error_msg = f"Error in WHOIS lookup: {str(e)}"
             self.logger.error(error_msg)
-            self.emit_error(socketio, namespace, error_msg)
+            self.emit_error(socketio, namespace, error_msg, room=room)
             return {'error': error_msg}
 
 

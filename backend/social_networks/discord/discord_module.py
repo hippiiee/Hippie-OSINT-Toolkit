@@ -23,6 +23,7 @@ class DiscordModule(OsintModule):
         """
         self.logger.info(f"Starting Discord lookup for user ID: {user_id}")
         cancel_event = kwargs.get('cancel_event')
+        room = kwargs.get('room')
         
         try:
             # Check if the search was cancelled
@@ -35,7 +36,7 @@ class DiscordModule(OsintModule):
             
             if response.status_code != 200:
                 error_msg = f"Error: HTTP {response.status_code}"
-                self.emit_error(socketio, namespace, error_msg)
+                self.emit_error(socketio, namespace, error_msg, room=room)
                 return {'error': error_msg}
 
             data = response.json()
@@ -66,14 +67,14 @@ class DiscordModule(OsintModule):
             }
             
             # Emit the result using the base class method
-            self.emit_result(socketio, namespace, user_data)
+            self.emit_result(socketio, namespace, user_data, room=room)
             
             return user_data
 
         except Exception as e:
             error_msg = f"Error in Discord lookup: {str(e)}"
             self.logger.error(error_msg)
-            self.emit_error(socketio, namespace, error_msg)
+            self.emit_error(socketio, namespace, error_msg, room=room)
             return {'error': error_msg}
 
     @staticmethod
