@@ -1,6 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { CalendarDays, Globe, Server, Shield, User, Building, MapPin } from 'lucide-react'
+import { Button } from "@/components/ui/button"
+import { CalendarDays, Globe, Server, Shield, User, Building, MapPin, ExternalLink, AlertCircle } from 'lucide-react'
+import { getTldRegistry } from "@/lib/tld-registries"
 
 interface WhoisResult {
   module: string;
@@ -51,13 +53,42 @@ const text = (v: unknown, fallback = 'N/A'): string => {
   return String(v);
 };
 
-export default function WhoisResult({ data }: { data: WhoisResult }) {
+export default function WhoisResult({ data, domain }: { data: WhoisResult; domain?: string }) {
   const { results } = data;
   const nameServers = asArray<string>(results.name_servers);
   const statuses = asArray<string>(results.status);
   const emails = asArray<string>(results.emails);
 
   const allNull = Object.values(results).every(v => v == null || (Array.isArray(v) && v.length === 0));
+  const queriedDomain = domain || (typeof results.domain_name === 'string' ? results.domain_name : null);
+  const registry = queriedDomain && allNull ? getTldRegistry(queriedDomain) : null;
+
+  if (allNull && registry) {
+    return (
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold flex items-center">
+            <AlertCircle className="mr-2 text-yellow-500" />
+            No WHOIS data available
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-4">
+          <p className="text-sm">
+            We couldn't retrieve WHOIS data for <strong>{queriedDomain}</strong>.
+          </p>
+          <p className="text-sm text-muted-foreground">{registry.reason}</p>
+          <div>
+            <Button asChild>
+              <a href={registry.lookupUrl} target="_blank" rel="noopener noreferrer">
+                Look up on {registry.name}
+                <ExternalLink className="ml-2 h-4 w-4" />
+              </a>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="w-full">
@@ -68,11 +99,6 @@ export default function WhoisResult({ data }: { data: WhoisResult }) {
         </CardTitle>
       </CardHeader>
       <CardContent className="grid gap-6">
-        {allNull && (
-          <p className="text-sm text-muted-foreground">
-            The WHOIS server did not return any data for this domain. Some TLDs (e.g. .es) restrict WHOIS lookups.
-          </p>
-        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>

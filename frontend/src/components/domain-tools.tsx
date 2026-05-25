@@ -368,7 +368,7 @@ export default function DomainToolsAndArticle() {
             {isLoading ? (
               <WhoisSkeleton />
             ) : results.whois ? (
-              <WhoisResult data={results.whois} />
+              <WhoisResult data={results.whois} domain={domain} />
             ) : null}
           </TabsContent>
           <TabsContent value="crtsh" className="w-full">
