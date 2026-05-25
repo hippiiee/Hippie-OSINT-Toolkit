@@ -5,9 +5,10 @@ ENV NEXT_PUBLIC_BACKEND_API=$NEXT_PUBLIC_BACKEND_API
 
 WORKDIR /app
 
-COPY . .
+COPY package.json package-lock.json ./
+RUN npm ci
 
-RUN npm install
+COPY . .
 RUN npm run build
 
 RUN addgroup -g 1001 -S nodejs
