@@ -13,6 +13,7 @@ from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_socketio import SocketIO
+from werkzeug.exceptions import HTTPException
 
 from core import socket_events as se
 from core.validators import (
@@ -62,6 +63,11 @@ io = SocketIO(
 limiter = Limiter(get_remote_address, app=app, default_limits=["10 per minute"], storage_uri="memory://")
 
 app.register_blueprint(metadata_bp)
+
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
 
 
 # ---------------------------------------------------------------------------
@@ -344,6 +350,8 @@ def handle_disconnect():
 
 @app.errorhandler(Exception)
 def error_handler(e):
+    if isinstance(e, HTTPException):
+        return e
     logger.exception(f"Server error: {e}")
     return "Internal server error", 500
 
