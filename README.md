@@ -30,8 +30,15 @@ Different tools are available in the UI giving you access to these features:
 
 ## Installation
 
-Modify the `docker-compose.yml` file to add your GHunt base64 token (if you want to use it), and reddit dev app client and secret to make request on the reddit API.
-optionally, you can modify the `NEXT_PUBLIC_BACKEND_API` variable to run the backend on a remote server.
+Create a `.env` file to provide your optional GHunt token and Reddit API credentials without storing them in the image:
+
+```dotenv
+GHUNT_CREDS_DATA=your_base64_credentials
+REDDIT_CLIENT_ID=your_client_id
+REDDIT_CLIENT_SECRET=your_client_secret
+```
+
+Optionally, modify the `NEXT_PUBLIC_BACKEND_API` build argument in `docker-compose.yml` to run the backend on a remote server.
 
 ```bash
 docker compose up

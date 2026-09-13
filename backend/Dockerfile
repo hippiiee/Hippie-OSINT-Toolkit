@@ -1,11 +1,12 @@
-FROM python:3.12-slim
+FROM python:3.13-slim
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     build-essential \
     python3-dev \
     libfreetype6-dev \
-    libffi-dev
+    libffi-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -21,8 +22,7 @@ RUN pip3 install pipx && \
 
 COPY . .
 
-ARG GHUNT_CREDS_DATA
-RUN mkdir -p ~/.malfrats/ghunt && \
-    echo "$GHUNT_CREDS_DATA" > ~/.malfrats/ghunt/creds.m
+RUN chmod +x /app/docker-entrypoint.sh
 
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
 CMD ["gunicorn", "--worker-class", "eventlet", "-w", "1", "--bind", "0.0.0.0:5000", "wsgi:app"]

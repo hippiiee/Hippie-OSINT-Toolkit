@@ -1,5 +1,5 @@
 aiosmtplib>=3.0.1
-aiohttp>=3.13.5
+aiohttp>=3.14.3
 asyncpraw>=7.8.1
 beautifulsoup4>=4.13.0
 dnspython>=2.7.0
@@ -9,12 +9,10 @@ Flask-SocketIO>=5.5.0
 Flask-Limiter>=4.0.0
 google-search-results
 python-whois>=0.9.5
-requests-html>=0.10.0
-search_engines @ https://github.com/soxoj/Search-Engines-Scraper/archive/refs/heads/master.zip
-Sublist3r==1.0
+requests>=2.34.2
 termcolor>=2.5.0
-yandex_search==0.3.2
 socid_extractor>=0.0.26
+w3lib>=2.4.1
 gunicorn>=23.0.0,<26.0.0
 eventlet>=0.40.0
 typing-extensions>=4.12.0

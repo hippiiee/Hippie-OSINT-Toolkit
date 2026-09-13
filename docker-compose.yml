@@ -19,11 +19,10 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-      args:
-        - GHUNT_CREDS_DATA=b64_credentials # retrieved in ~/.malfrats/ghunt/creds.m 
     environment:
-      - REDDIT_CLIENT_ID=1234
-      - REDDIT_CLIENT_SECRET=1234
+      GHUNT_CREDS_DATA: ${GHUNT_CREDS_DATA:-}
+      REDDIT_CLIENT_ID: ${REDDIT_CLIENT_ID:-}
+      REDDIT_CLIENT_SECRET: ${REDDIT_CLIENT_SECRET:-}
     ports:
       - "5000:5000"
     networks:
