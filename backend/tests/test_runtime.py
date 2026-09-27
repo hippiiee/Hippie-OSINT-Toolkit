@@ -4,7 +4,7 @@ import sys
 import threading
 import time
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 import requests
 import app as server
@@ -144,6 +144,38 @@ class UsernameTests(unittest.TestCase):
             result = self.module.search('fixture', self.io, '/username', room='owner')
         self.assertEqual(result['result']['status'], 'complete')
         self.assertEqual(result['result']['data']['found_sites'], [])
+
+
+class RedditTests(unittest.IsolatedAsyncioTestCase):
+    async def test_api_client_closed_on_failure(self):
+        from social_networks.reddit.reddit_module import RedditModule
+        client = Mock()
+        client.redditor = AsyncMock(side_effect=RuntimeError('API fixture failure'))
+        client.close = AsyncMock()
+        with patch('social_networks.reddit.reddit_module.asyncpraw.Reddit', return_value=client), self.assertLogs('osint.reddit', level='ERROR'):
+            result = await RedditModule().search('fixture', Mock(), '/reddit', room='owner')
+        self.assertIn('error', result)
+        client.close.assert_awaited_once()
+
+    async def test_api_client_closed_on_cancellation(self):
+        from social_networks.reddit.reddit_module import RedditModule
+        event = threading.Event()
+        client = Mock()
+        async def redditor(username):
+            event.set()
+            return Mock()
+        client.redditor = redditor
+        client.close = AsyncMock()
+        with patch('social_networks.reddit.reddit_module.asyncpraw.Reddit', return_value=client):
+            result = await RedditModule().search('fixture', Mock(), '/reddit', room='owner', cancel_event=event)
+        self.assertEqual(result['error'], 'Search cancelled')
+        client.close.assert_awaited_once()
+
+    async def test_progress_only_reaches_owner(self):
+        from social_networks.reddit.reddit_module import RedditModule
+        io = Mock()
+        RedditModule().emit_progress(io, '/reddit', 'fixture', room='owner')
+        io.emit.assert_called_once_with('progress', {'message': 'fixture'}, namespace='/reddit', room='owner')
 
 
 if __name__ == '__main__':

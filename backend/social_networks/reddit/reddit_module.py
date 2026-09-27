@@ -37,6 +37,7 @@ class RedditModule(OsintModule):
         submission_limit = kwargs.get('submission_limit', 5)
         comment_limit = kwargs.get('comment_limit', 5)
         room = kwargs.get('room')
+        reddit = None
         
         try:
             # Check for cancellation
@@ -99,7 +100,7 @@ class RedditModule(OsintModule):
             # Define async functions to fetch submissions and comments concurrently
             async def fetch_submissions():
                 submissions = []
-                self.emit_progress(socketio, namespace, "Fetching submissions...")
+                self.emit_progress(socketio, namespace, "Fetching submissions...", room=room)
                 
                 count = 0
                 async for submission in user.submissions.new(limit=submission_limit):
@@ -121,13 +122,13 @@ class RedditModule(OsintModule):
                     
                     count += 1
                     if count % 2 == 0:  # Update progress every 2 submissions
-                        self.emit_progress(socketio, namespace, f"Fetched {count}/{submission_limit} submissions...")
+                        self.emit_progress(socketio, namespace, f"Fetched {count}/{submission_limit} submissions...", room=room)
                 
                 return submissions
 
             async def fetch_comments():
                 comments = []
-                self.emit_progress(socketio, namespace, "Fetching comments...")
+                self.emit_progress(socketio, namespace, "Fetching comments...", room=room)
                 
                 count = 0
                 async for comment in user.comments.new(limit=comment_limit):
@@ -148,7 +149,7 @@ class RedditModule(OsintModule):
                     
                     count += 1
                     if count % 2 == 0:  # Update progress every 2 comments
-                        self.emit_progress(socketio, namespace, f"Fetched {count}/{comment_limit} comments...")
+                        self.emit_progress(socketio, namespace, f"Fetched {count}/{comment_limit} comments...", room=room)
                 
                 return comments
                 
@@ -171,7 +172,7 @@ class RedditModule(OsintModule):
             user_info['result']['comments'] = comments
             self.emit_result(socketio, namespace, {'comments': comments}, room=room)
             
-            self.emit_progress(socketio, namespace, "Completed Reddit data collection.")
+            self.emit_progress(socketio, namespace, "Completed Reddit data collection.", room=room)
             
             return user_info
 
@@ -185,7 +186,10 @@ class RedditModule(OsintModule):
             self.logger.error(error_msg)
             self.emit_error(socketio, namespace, str(e), room=room)
             return {'error': error_msg}
-    
+        finally:
+            if reddit is not None:
+                await reddit.close()
+
     async def get_link_title(self, comment):
         """Helper method to get link title if not directly available"""
         try:
@@ -197,10 +201,10 @@ class RedditModule(OsintModule):
             pass
         return "Unknown Title"
     
-    def emit_progress(self, socketio, namespace, message):
+    def emit_progress(self, socketio, namespace, message, room=None):
         """Emit progress updates via WebSocket"""
         try:
-            socketio.emit('progress', {'message': message}, namespace=namespace)
+            socketio.emit('progress', {'message': message}, namespace=namespace, room=room)
         except Exception as e:
             self.logger.error(f"Error emitting progress: {str(e)}")
 
