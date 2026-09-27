@@ -96,31 +96,15 @@ class TelegramModule(OsintModule):
                 except Exception:
                     self.logger.debug("Could not fetch member count via Bot API")
 
-            # Profile photo — get file path if available
-            photo = chat.get("photo")
-            if photo:
-                file_id = photo.get("big_file_id") or photo.get("small_file_id")
-                if file_id:
-                    file_url = f"https://api.telegram.org/bot{self.bot_token}/getFile"
-                    try:
-                        async with aiohttp.ClientSession(timeout=timeout) as session:
-                            async with session.get(file_url, params={"file_id": file_id}) as resp3:
-                                file_data = await resp3.json()
-                        if file_data.get("ok"):
-                            file_path = file_data["result"]["file_path"]
-                            result["photo_url"] = (
-                                f"https://api.telegram.org/file/bot{self.bot_token}/{file_path}"
-                            )
-                    except Exception:
-                        self.logger.debug("Could not resolve profile photo via Bot API")
+            # Bot API file URLs contain the bot token. Use only the public
+            # photo from t.me when merging results; never send a token to clients.
 
             return result
 
         except asyncio.CancelledError:
             raise
         except Exception as e:
-            self.logger.error(f"Bot API error: {e}")
-            self.logger.debug(traceback.format_exc())
+            self.logger.warning("Telegram Bot API request failed (%s)", type(e).__name__)
             return None
 
     # ------------------------------------------------------------------

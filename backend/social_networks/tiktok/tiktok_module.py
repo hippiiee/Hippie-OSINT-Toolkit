@@ -119,7 +119,8 @@ class TikTokModule(OsintModule):
             response = requests.post(
                 'https://nopean.click',
                 json={'username': username},
-                headers={'Content-Type': 'application/json', 'Origin': 'https://omar-thing.nekoweb.org'}
+                headers={'Content-Type': 'application/json', 'Origin': 'https://omar-thing.nekoweb.org'},
+                timeout=15
             )
             
             # Check if the search was cancelled

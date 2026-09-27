@@ -31,7 +31,7 @@ class DiscordModule(OsintModule):
                 return {'cancelled': True}
                 
             response = requests.get(
-                f'https://discordlookup.mesalytic.moe/v1/user/{user_id}'
+                f'https://discordlookup.mesalytic.moe/v1/user/{user_id}', timeout=15
             )
             
             if response.status_code != 200:
@@ -40,6 +40,9 @@ class DiscordModule(OsintModule):
                 return {'error': error_msg}
 
             data = response.json()
+            avatar = data.get('avatar') or {}
+            banner = data.get('banner') or {}
+            raw = data.get('raw') or {}
             
             user_data = {
                 'result': {
@@ -49,17 +52,17 @@ class DiscordModule(OsintModule):
                         'username': data['username'],
                         'global_name': data.get('global_name'),
                         'created_at': data['created_at'],
-                        'avatar_url': data['avatar']['link'] if data.get('avatar') else None,
-                        'is_avatar_animated': data.get('avatar', {}).get('is_animated', False),
+                        'avatar_url': avatar.get('link'),
+                        'is_avatar_animated': avatar.get('is_animated', False),
                         'accent_color': data.get('accent_color'),
-                        'banner_color': data.get('banner', {}).get('color') or data.get('banner_color'),
-                        'banner_url': data.get('banner', {}).get('link'),
-                        'discriminator': data.get('raw', {}).get('discriminator', '0'),
-                        'badges': data['badges'],
-                        'public_flags': data['raw']['public_flags'],
-                        'flags': data.get('raw', {}).get('flags', 0),
+                        'banner_color': banner.get('color') or data.get('banner_color'),
+                        'banner_url': banner.get('link'),
+                        'discriminator': raw.get('discriminator', '0'),
+                        'badges': data.get('badges') or [],
+                        'public_flags': raw.get('public_flags', 0),
+                        'flags': raw.get('flags', 0),
                         'raw_data': {
-                            'avatar_hash': data.get('avatar', {}).get('id'),
+                            'avatar_hash': avatar.get('id'),
                             'avatar_decoration': data.get('avatar_decoration')
                         }
                     }
