@@ -56,3 +56,8 @@ next-env.d.ts
 Thumbs.db
 
 project_source
+
+# Local runtime data and integration test artifacts
+/data/
+/.local-tests/
+/docker-compose.override.yml

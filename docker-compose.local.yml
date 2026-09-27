@@ -1,0 +1,10 @@
+services:
+  frontend:
+    build:
+      args:
+        - NEXT_PUBLIC_BACKEND_API=http://localhost:5333
+    ports: !override
+      - "127.0.0.1:3366:3000"
+  backend:
+    ports: !override
+      - "127.0.0.1:5333:5000"

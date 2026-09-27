@@ -23,6 +23,7 @@ services:
       GHUNT_CREDS_DATA: ${GHUNT_CREDS_DATA:-}
       REDDIT_CLIENT_ID: ${REDDIT_CLIENT_ID:-}
       REDDIT_CLIENT_SECRET: ${REDDIT_CLIENT_SECRET:-}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
     ports:
       - "5000:5000"
     networks:

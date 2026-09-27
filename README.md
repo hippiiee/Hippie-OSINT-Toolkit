@@ -30,21 +30,31 @@ Different tools are available in the UI giving you access to these features:
 
 ## Installation
 
-Create a `.env` file to provide your optional GHunt token and Reddit API credentials without storing them in the image:
+Create a `.env` file to provide your optional GHunt session, Reddit API credentials and Telegram bot token without storing them in the image:
 
 ```dotenv
 GHUNT_CREDS_DATA=your_base64_credentials
 REDDIT_CLIENT_ID=your_client_id
 REDDIT_CLIENT_SECRET=your_client_secret
+TELEGRAM_BOT_TOKEN=your_bot_token
 ```
 
 Optionally, modify the `NEXT_PUBLIC_BACKEND_API` build argument in `docker-compose.yml` to run the backend on a remote server.
 
 ```bash
-docker compose up
+cp .env.example .env
+cp docker-compose.local.yml docker-compose.override.yml
+# Fill .env with the credentials for the modules you use.
+docker compose up --build
 ```
 
-And that's it, you can now access the app on `http://localhost:3000`.
+The local override exposes the app at `http://localhost:3366` and the
+backend at `http://localhost:5333`, bound to loopback. Copy `.env.example` to `.env`
+and supply the credentials for GHunt, Reddit and Telegram there. `.env` and the
+active local override are ignored by Git; never commit credentials or local runtime databases.
+
+To use the base ports (3000 and 5000) without the local override, run
+`docker compose -f docker-compose.yml up --build`.
 
 ## Contributing
 
