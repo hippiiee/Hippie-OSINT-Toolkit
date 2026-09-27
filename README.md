@@ -63,3 +63,20 @@ Run the offline concurrency, cancellation, decoding, and real WebSocket tests:
 ```sh
 docker compose run --rm --no-deps --entrypoint python backend -m unittest discover -s tests -v
 ```
+
+GHunt is installed in its own pipx environment from upstream commit
+`5ee893929c51c7a8a665b199bbae04ce85a662b4` rather than PyPI 2.3.4. This includes
+[upstream PR #592](https://github.com/mxrch/GHunt/pull/592), which fixes missing
+cover-photo `container` metadata, missing profile-edit timestamps, and undefined
+variables in JSON export. A backend image rebuild is required to apply this pin.
+
+The Google module supports `GHUNT_EXECUTABLE` for a custom local executable,
+limits a lookup to 180 seconds, and removes its temporary files on every exit.
+Errors shown to clients are classified messages; raw GHunt diagnostics and
+credentials are not logged or returned. Keep session files outside the repository.
+
+Verify the installed GHunt parser/export fixes separately in its isolated Python:
+
+```sh
+docker compose run --rm --no-deps --entrypoint /root/.local/share/pipx/venvs/ghunt/bin/python backend -m unittest discover -s tests -p ghunt_dependency_checks.py -v
+```

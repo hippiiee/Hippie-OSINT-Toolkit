@@ -15,9 +15,11 @@ RUN git clone https://github.com/hippiiee/osgint /app/social_networks/github/pro
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Pin upstream fixes for missing cover-photo metadata, missing edit dates and JSON export.
+# PyPI 2.3.4 does not include these fixes (GHunt PR #592).
 RUN pip3 install pipx && \
     pipx ensurepath && \
-    pipx install ghunt && \
+    pipx install "ghunt @ git+https://github.com/mxrch/GHunt.git@5ee893929c51c7a8a665b199bbae04ce85a662b4" && \
     ln -s ~/.local/bin/ghunt /usr/local/bin/ghunt
 
 COPY . .
