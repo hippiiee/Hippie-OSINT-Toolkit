@@ -8,7 +8,7 @@ class CrtshModule(OsintModule):
     
     def __init__(self):
         super().__init__("crtsh")
-        self.api_url = 'https://crt.sh/?q={}&output=json'
+        self.api_url = 'https://crt.sh/'
     
     async def search(self, domain: str, socketio, namespace: str, **kwargs) -> dict:
         """
@@ -28,11 +28,12 @@ class CrtshModule(OsintModule):
         try:
             self.logger.info("Contacting crt.sh API...")
             
-            url = self.api_url.format(domain)
+            # Include certificates issued only for subdomains of the query.
+            params = {'q': f'%.{domain}', 'output': 'json'}
             
             # Use asyncio.to_thread to run blocking code
             response = await asyncio.to_thread(
-                lambda: requests.get(url, timeout=10)
+                lambda: requests.get(self.api_url, params=params, timeout=15)
             )
             
             response.raise_for_status()

@@ -9,6 +9,23 @@ from social_networks.tiktok.tiktok_module import TikTokModule
 
 
 class ModuleEdgeTests(unittest.IsolatedAsyncioTestCase):
+    async def test_subdomain_query_includes_certificates_without_an_apex_name(self):
+        from domain.subdomains.crtsh_module import CrtshModule
+        response = Mock(status_code=200)
+        response.json.return_value = [
+            {'name_value': 'api.example.com\nwww.example.com'},
+            {'name_value': 'api.example.com'},
+        ]
+        def provider(url, params, timeout):
+            # The fixture has certificates for subdomains only, not the apex.
+            self.assertEqual(params['q'], '%.example.com')
+            return response
+        io = Mock()
+        with patch('requests.get', side_effect=provider):
+            result = await CrtshModule().search('example.com', io, '/subdomains', room='owner')
+        self.assertEqual(result['result']['results'], ['api.example.com', 'www.example.com'])
+        self.assertEqual(io.emit.call_args.kwargs['room'], 'owner')
+
     async def test_discord_accepts_missing_optional_profile_fields(self):
         response = Mock(status_code=200)
         response.json.return_value = {'id': 'fixture', 'username': 'fixture', 'created_at': '2020-01-01', 'avatar': None, 'banner': None, 'raw': None}
