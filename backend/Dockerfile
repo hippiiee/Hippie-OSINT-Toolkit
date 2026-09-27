@@ -25,4 +25,4 @@ COPY . .
 RUN chmod +x /app/docker-entrypoint.sh
 
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
-CMD ["gunicorn", "--worker-class", "eventlet", "-w", "1", "--bind", "0.0.0.0:5000", "wsgi:app"]
+CMD ["gunicorn", "--worker-class", "gthread", "--threads", "100", "-w", "1", "--bind", "0.0.0.0:5000", "wsgi:app"]

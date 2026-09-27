@@ -49,3 +49,17 @@ And that's it, you can now access the app on `http://localhost:3000`.
 ## Contributing
 
 Feel free to contribute to the project, if you want to had techniques, write articles or even integrate new tools.
+
+### Backend runtime and regression tests
+
+The backend uses Flask-SocketIO's native threading mode with one Gunicorn
+`gthread` worker and 100 HTTP threads. Each asynchronous search runs its own
+`asyncio.run()` in a background thread; do not enable Eventlet monkey-patching
+or select an Eventlet worker. This follows the
+[Flask-SocketIO threaded deployment configuration](https://flask-socketio.readthedocs.io/en/latest/deployment.html#gunicorn-web-server).
+
+Run the offline concurrency, cancellation, decoding, and real WebSocket tests:
+
+```sh
+docker compose run --rm --no-deps --entrypoint python backend -m unittest discover -s tests -v
+```

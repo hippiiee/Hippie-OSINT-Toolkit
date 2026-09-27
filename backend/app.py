@@ -1,6 +1,3 @@
-import eventlet
-eventlet.monkey_patch()
-
 import asyncio
 import logging
 import os
@@ -53,9 +50,9 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 io = SocketIO(
     app,
     cors_allowed_origins="*",
-    async_mode="eventlet",
-    logger=True,
-    engineio_logger=True,
+    async_mode="threading",
+    logger=False,
+    engineio_logger=False,
     ping_timeout=60,
     ping_interval=25,
 )
@@ -76,64 +73,70 @@ def health():
 # Keyed by (namespace, sid) so two clients on the same namespace don't cancel
 # each other. Modules cooperate via the threading.Event we pass in.
 _active_tasks: Dict[Tuple[str, str], threading.Event] = {}
+_tasks_lock = threading.RLock()
 
 
 def _cancel_task(namespace: str, sid: str) -> None:
-    event = _active_tasks.pop((namespace, sid), None)
-    if event is not None:
-        logger.info(f"Cancelling task for {namespace} sid={sid}")
-        event.set()
+    with _tasks_lock:
+        event = _active_tasks.pop((namespace, sid), None)
+        if event is not None:
+            event.set()
 
 
 def _register_task(namespace: str, sid: str) -> threading.Event:
-    _cancel_task(namespace, sid)
-    event = threading.Event()
-    _active_tasks[(namespace, sid)] = event
-    return event
+    with _tasks_lock:
+        _cancel_task(namespace, sid)
+        event = threading.Event()
+        _active_tasks[(namespace, sid)] = event
+        return event
 
 
 def _clear_client(sid: str) -> None:
-    for key in [k for k in _active_tasks if k[1] == sid]:
-        _active_tasks.pop(key).set()
+    with _tasks_lock:
+        for key in [k for k in _active_tasks if k[1] == sid]:
+            _active_tasks.pop(key).set()
+
+
+def _finish_task(namespace, room, cancel_event):
+    with _tasks_lock:
+        key = (namespace, room)
+        # An older task must not remove its replacement.
+        if _active_tasks.get(key) is cancel_event:
+            _active_tasks.pop(key, None)
 
 
 # ---------------------------------------------------------------------------
-# Background execution (eventlet-cooperative, single model)
+# Background execution: native threads isolate each task's asyncio loop.
 # ---------------------------------------------------------------------------
-def _spawn_async(coro_fn: Callable, *args, namespace: str, **kwargs) -> None:
-    """Run an async coroutine in an eventlet-backed background task.
+def _spawn_async(coro_fn: Callable, *args, namespace: str, **kwargs):
+    def run():
+        # asyncio.run also shuts down async generators and the default executor.
+        asyncio.run(coro_fn(*args, **kwargs))
 
-    One asyncio loop per task — sufficient for the modest concurrency here and
-    drastically simpler than the old thread+loop juggling.
-    """
+    return _spawn_sync(run, namespace=namespace, _task_room=kwargs.get("room"),
+                       _task_cancel=kwargs.get("cancel_event"))
+
+
+def _spawn_sync(fn: Callable, *args, namespace: str,
+                _task_room=None, _task_cancel=None, **kwargs):
+    """Run a callable in a native Socket.IO background thread."""
+    room = kwargs.get("room", _task_room)
+    cancel_event = kwargs.get("cancel_event", _task_cancel)
 
     def runner() -> None:
-        loop = asyncio.new_event_loop()
         try:
-            asyncio.set_event_loop(loop)
-            loop.run_until_complete(coro_fn(*args, **kwargs))
+            if cancel_event is None or not cancel_event.is_set():
+                fn(*args, **kwargs)
         except asyncio.CancelledError:
-            logger.info(f"Async task cancelled for {namespace}")
+            logger.info("Async task cancelled for %s", namespace)
         except Exception as exc:
-            logger.exception(f"Async task failed for {namespace}: {exc}")
-            io.emit(se.SERVER_EVENTS["result"], {"error": str(exc)}, namespace=namespace, room=kwargs.get("room"))
+            logger.exception("Task failed for %s: %s", namespace, exc)
+            if cancel_event is None or not cancel_event.is_set():
+                _emit_error(namespace, str(exc), room=room)
         finally:
-            loop.close()
+            _finish_task(namespace, room, cancel_event)
 
-    io.start_background_task(runner)
-
-
-def _spawn_sync(fn: Callable, *args, namespace: str, **kwargs) -> None:
-    """Run a sync callable in an eventlet-backed background task."""
-
-    def runner() -> None:
-        try:
-            fn(*args, **kwargs)
-        except Exception as exc:
-            logger.exception(f"Sync task failed for {namespace}: {exc}")
-            io.emit(se.SERVER_EVENTS["result"], {"error": str(exc)}, namespace=namespace, room=kwargs.get("room"))
-
-    io.start_background_task(runner)
+    return io.start_background_task(runner)
 
 
 # ---------------------------------------------------------------------------
@@ -173,6 +176,14 @@ def _validated_handler(validator: Optional[Callable], namespace: str, runner: Ca
         except Exception as exc:
             logger.exception(f"Handler error on {namespace}: {exc}")
             _emit_error(namespace, str(exc), room=room)
+            _finish_task(namespace, room, cancel_event)
+
+    return handler
+
+
+def _disconnect_handler(namespace: str):
+    def handler(reason=None):
+        _cancel_task(namespace, request.sid)
 
     return handler
 
@@ -201,7 +212,7 @@ async def _run_domain(query, _data, cancel_event, room):
         await whois_module.search(query, io, namespace, cancel_event=cancel_event, room=room)
 
 
-async def _run_email(_query, _data, _cancel_event, room):
+async def _run_email(_query, _data, cancel_event, room):
     io.emit(
         se.SERVER_EVENTS["result"],
         {"result": {"module": "email", "message": "Email search functionality will be implemented soon."}},
@@ -210,7 +221,7 @@ async def _run_email(_query, _data, _cancel_event, room):
     )
 
 
-async def _run_phone(_query, _data, _cancel_event, room):
+async def _run_phone(_query, _data, cancel_event, room):
     io.emit(
         se.SERVER_EVENTS["result"],
         {"result": {"module": "phone", "message": "Phone search functionality will be implemented soon."}},
@@ -236,15 +247,15 @@ def _async_runner(coro_fn, namespace: str, **extra_kwargs):
 
 
 def _domain_runner(value, _data, cancel_event, room):
-    _spawn_async(_run_domain, value, None, cancel_event, room, namespace=se.ns("domain"))
+    _spawn_async(_run_domain, value, None, cancel_event=cancel_event, room=room, namespace=se.ns("domain"))
 
 
 def _email_runner(value, data, cancel_event, room):
-    _spawn_async(_run_email, value, data, cancel_event, room, namespace=se.ns("email"))
+    _spawn_async(_run_email, value, data, cancel_event=cancel_event, room=room, namespace=se.ns("email"))
 
 
 def _phone_runner(value, data, cancel_event, room):
-    _spawn_async(_run_phone, value, data, cancel_event, room, namespace=se.ns("phone"))
+    _spawn_async(_run_phone, value, data, cancel_event=cancel_event, room=room, namespace=se.ns("phone"))
 
 
 def _whatsmyname_runner(value, _data, cancel_event, room):
@@ -321,6 +332,8 @@ def _register_handlers() -> None:
         logger.info(f"Registered handler {namespace}:{event_name}")
 
     for ns_key, channels in se.NAMESPACES.items():
+        namespace = se.ns(ns_key)
+        io.on("disconnect", namespace=namespace)(_disconnect_handler(namespace))
         cancel_event_name = channels.get("cancel")
         if not cancel_event_name:
             continue
@@ -342,7 +355,7 @@ def handle_connect():
 
 
 @io.on("disconnect")
-def handle_disconnect():
+def handle_disconnect(reason=None):
     sid = request.sid
     logger.info(f"Client disconnected: {sid}")
     _clear_client(sid)
