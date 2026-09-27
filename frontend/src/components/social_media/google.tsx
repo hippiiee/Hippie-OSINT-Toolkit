@@ -86,8 +86,9 @@ export default function GoogleTools() {
     })
 
     newSocket.on('search_result', (data) => {
-      console.log('Received data from WebSocket:', data)
-      setResult(data.result)
+      setResult(data.error
+        ? { module: 'google', error: String(data.error) }
+        : data.result ?? null)
       setIsLoading(false)
     })
 
