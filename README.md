@@ -17,7 +17,7 @@ Different tools are available in the UI giving you access to these features:
   - WHOIS
   - crt.sh domain enumeration
 - Social networks:
-  - Tiktok video timestamp extractor
+  - TikTok public profile lookup and video timestamp extractor
   - Google account search ([ghunt](https://github.com/mxrch/GHunt))
   - Reddit account search (reddit API)
   - Github account search ([osgint](https://github.com/hippiiee/osgint))
@@ -57,6 +57,13 @@ To use the base ports (3000 and 5000) without the local override, run
 `docker compose -f docker-compose.yml up --build`.
 
 ## Contributing
+
+TikTok profile lookup reads the public profile page directly, with no API key.
+The former `nopean.click` provider is no longer used. Fields TikTok does not
+publish (such as region on some profiles) remain blank or show `Unknown`.
+Page format changes, rate limits, or access restrictions can make a lookup
+temporarily unavailable. Video timestamps still require a full
+`https://www.tiktok.com/@username/video/123...` URL.
 
 Feel free to contribute to the project, if you want to had techniques, write articles or even integrate new tools.
 

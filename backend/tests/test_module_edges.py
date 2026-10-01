@@ -39,13 +39,16 @@ class ModuleEdgeTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(io.emit.call_args.kwargs['room'], 'owner')
 
     async def test_tiktok_request_has_timeout_and_routes_result(self):
-        response = Mock(status_code=200)
-        response.json.return_value = {'username': 'fixture'}
+        data = {'__DEFAULT_SCOPE__': {'webapp.user-detail': {
+            'statusCode': 0, 'userInfo': {'user': {'uniqueId': 'fixture', 'id': '123'}}
+        }}}
+        response = Mock(status_code=200, text='<script id="__UNIVERSAL_DATA_FOR_REHYDRATION__">' + json.dumps(data) + '</script>')
         io = Mock()
-        with patch('requests.post', return_value=response) as post:
+        with patch('requests.get', return_value=response) as get:
             result = await TikTokModule().search('fixture', io, '/tiktok', search_type='profile', room='owner')
         self.assertNotIn('error', result)
-        self.assertEqual(post.call_args.kwargs['timeout'], 15)
+        self.assertEqual(get.call_args.kwargs['timeout'], 15)
+        self.assertFalse(get.call_args.kwargs['allow_redirects'])
         self.assertEqual(io.emit.call_args.kwargs['room'], 'owner')
 
     async def test_telegram_photo_never_exposes_bot_token(self):
