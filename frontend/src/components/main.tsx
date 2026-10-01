@@ -243,17 +243,17 @@ export default function HippieOSINTToolkit() {
 
   return (
     <TooltipProvider>
-      <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-950 transition-all duration-300">
+      <div className="flex flex-col h-dvh bg-gray-50 dark:bg-gray-950 transition-all duration-300">
         {/* Header */}
-        <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 py-3 flex justify-between items-center transition-all duration-300 sticky top-0 z-30">
-          <div className="flex items-center">
-            <Button variant="ghost" size="icon" className="mr-2 md:hidden" onClick={toggleSidebar}>
+        <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 h-16 shrink-0 px-3 sm:px-4 flex justify-between items-center transition-all duration-300 sticky top-0 z-30">
+          <div className="flex min-w-0 items-center">
+            <Button variant="ghost" size="icon" className="mr-2 shrink-0 md:hidden" onClick={toggleSidebar} aria-label={isSidebarOpen ? "Close navigation" : "Open navigation"} aria-expanded={isSidebarOpen} aria-controls="tool-navigation">
               {isSidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
             <a
               href="/"
               onClick={handleTitleClick}
-              className="text-xl md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600 dark:from-purple-400 dark:to-indigo-400 hover:opacity-90 transition-all duration-300"
+              className="min-w-0 truncate text-base sm:text-xl md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600 dark:from-purple-400 dark:to-indigo-400 hover:opacity-90 transition-all duration-300"
             >
               Hippie OSINT Toolkit
             </a>
@@ -266,7 +266,7 @@ export default function HippieOSINTToolkit() {
               </div>
             )}
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex shrink-0 items-center space-x-1 sm:space-x-2">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -314,11 +314,11 @@ export default function HippieOSINTToolkit() {
           )}
 
           {/* Sidebar */}
-          <aside
+          <aside id="tool-navigation"
             className={cn(
-              "bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 w-64 fixed md:relative inset-y-0 left-0 transform",
+              "bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 w-64 max-w-[85vw] shrink-0 fixed md:relative inset-y-0 left-0 transform",
               isSidebarOpen ? "translate-x-0" : "-translate-x-full",
-              "md:translate-x-0 transition-transform duration-300 ease-in-out z-40 md:z-10 pt-0 mt-0 top-[57px] md:top-0 h-[calc(100vh-57px)] overflow-y-auto",
+              "md:translate-x-0 transition-transform duration-300 ease-in-out z-40 md:z-10 pt-0 mt-0 top-16 md:top-0 h-[calc(100dvh-64px)] md:h-full overflow-y-auto",
             )}
           >
             <nav className="p-4 flex flex-col min-h-full">
@@ -386,7 +386,7 @@ export default function HippieOSINTToolkit() {
           </aside>
 
           {/* Main content */}
-          <main className="flex-1 p-4 md:p-6 overflow-auto bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-all duration-300">
+          <main className="tool-content min-w-0 flex-1 p-4 md:p-6 overflow-auto bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-all duration-300">
             {renderTool()}
           </main>
         </div>

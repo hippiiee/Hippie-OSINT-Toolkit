@@ -377,7 +377,7 @@ export default function TelegramTools() {
                 <div className="grid gap-6 sm:grid-cols-2">
                   {/* Bio / Description */}
                   {(result.bio || result.description) && (
-                    <div className="col-span-2">
+                    <div className="col-span-full">
                       <h3 className="text-lg font-semibold mb-1 flex items-center">
                         <MessageCircle className="mr-2 h-4 w-4" />
                         {result.type === 'channel' || result.type === 'supergroup' || result.type === 'group'

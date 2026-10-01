@@ -225,7 +225,7 @@ export default function RedditTools() {
           </CardHeader>
           <CardContent>
             <div className="grid gap-6 sm:grid-cols-2">
-              <div className="col-span-2 flex items-center space-x-4">
+              <div className="col-span-full flex items-center space-x-4">
                 {isLoading ? (
                   <Skeleton className="h-20 w-20 rounded-full" />
                 ) : (
@@ -287,7 +287,7 @@ export default function RedditTools() {
                 )}
               </div>
               {(isLoading || results.reddit?.subreddit) && (
-                <div className="col-span-2">
+                <div className="col-span-full">
                   <h3 className="font-semibold mb-2">User Subreddit</h3>
                   {isLoading ? (
                     <>

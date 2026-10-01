@@ -252,7 +252,7 @@ export default function MastodonTools() {
       </CardHeader>
       <CardContent>
         <div className="grid gap-6 sm:grid-cols-2">
-          <div className="col-span-2 flex items-center space-x-4">
+          <div className="col-span-full flex items-center space-x-4">
             <Skeleton className="h-20 w-20 rounded-full" />
             <div>
               <Skeleton className="h-6 w-40 mb-2" />
@@ -271,13 +271,13 @@ export default function MastodonTools() {
             <Skeleton className="h-4 w-3/4 mb-2" />
             <Skeleton className="h-4 w-5/6" />
           </div>
-          <div className="col-span-2">
+          <div className="col-span-full">
             <h3 className="font-semibold mb-2">Bio</h3>
             <Skeleton className="h-4 w-full mb-2" />
             <Skeleton className="h-4 w-5/6 mb-2" />
             <Skeleton className="h-4 w-4/5" />
           </div>
-          <div className="col-span-2">
+          <div className="col-span-full">
             <h3 className="font-semibold mb-2">Account Status</h3>
             <div className="flex flex-wrap gap-2">
               <Skeleton className="h-6 w-20" />
@@ -300,7 +300,7 @@ export default function MastodonTools() {
       </CardHeader>
       <CardContent>
         <div className="grid gap-6 sm:grid-cols-2">
-          <div className="col-span-2 flex items-center space-x-4">
+          <div className="col-span-full flex items-center space-x-4">
             <Skeleton className="h-20 w-20 rounded-full" />
             <div>
               <Skeleton className="h-6 w-40 mb-2" />
@@ -326,7 +326,7 @@ export default function MastodonTools() {
               <Skeleton className="h-6 w-24" />
             </div>
           </div>
-          <div className="col-span-2">
+          <div className="col-span-full">
             <h3 className="font-semibold mb-2">Admin Information</h3>
             <div className="flex items-center space-x-4">
               <Skeleton className="h-12 w-12 rounded-full" />
@@ -342,7 +342,7 @@ export default function MastodonTools() {
   )
 
   const MatchedSitesSkeleton = () => (
-    <div className="col-span-2">
+    <div className="col-span-full">
       <h3 className="font-semibold mb-2">Matched Sites</h3>
       <ul className="list-disc pl-5">
         <li>
@@ -455,7 +455,7 @@ export default function MastodonTools() {
               </CardHeader>
               <CardContent>
                 <div className="grid gap-6 sm:grid-cols-2">
-                  <div className="col-span-2 flex items-center space-x-4">
+                  <div className="col-span-full flex items-center space-x-4">
                     <Avatar className="h-20 w-20">
                       <AvatarImage src={userInfo.avatar} alt={userInfo.display_name} />
                       <AvatarFallback>{userInfo.display_name.slice(0, 2).toUpperCase()}</AvatarFallback>
@@ -520,11 +520,11 @@ export default function MastodonTools() {
                       </p>
                     )}
                   </div>
-                  <div className="col-span-2">
+                  <div className="col-span-full">
                     <h3 className="font-semibold mb-2">Bio</h3>
                     {userInfo.bio && <p>{userInfo.bio}</p>}
                   </div>
-                  <div className="col-span-2">
+                  <div className="col-span-full">
                     <h3 className="font-semibold mb-2">Account Status</h3>
                     <div className="flex flex-wrap gap-2">
                       {userInfo.locked && (
@@ -541,7 +541,7 @@ export default function MastodonTools() {
                     <MatchedSitesSkeleton />
                   ) : (
                     matchedSites.length > 0 && (
-                      <div className="col-span-2">
+                      <div className="col-span-full">
                         <h3 className="font-semibold mb-2">Matched Sites</h3>
                         <ul className="list-disc pl-5">
                           {matchedSites.map((site, index) => (
@@ -605,7 +605,7 @@ export default function MastodonTools() {
               </CardHeader>
               <CardContent>
                 <div className="grid gap-6 sm:grid-cols-2">
-                  <div className="col-span-2 flex items-center space-x-4">
+                  <div className="col-span-full flex items-center space-x-4">
                     <Avatar className="h-20 w-20">
                       <AvatarImage src={instanceInfo.thumbnail} alt={instanceInfo.title} />
                       <AvatarFallback>{instanceInfo.title.slice(0, 2).toUpperCase()}</AvatarFallback>
@@ -645,7 +645,7 @@ export default function MastodonTools() {
                       ))}
                     </div>
                   </div>
-                  <div className="col-span-2">
+                  <div className="col-span-full">
                     <h3 className="font-semibold mb-2">Admin Information</h3>
                     <div className="flex items-center space-x-4">
                       <Avatar className="h-12 w-12">

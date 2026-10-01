@@ -117,3 +117,25 @@
     @apply mb-2;
   }
 }
+
+/* Keep long OSINT identifiers and URLs inside the tool pane on small screens. */
+@layer components {
+  .tool-content {
+    overflow-wrap: anywhere;
+  }
+
+  .tool-content :where(.grid > *, .flex > *) {
+    min-width: 0;
+  }
+
+  .tool-content :where(pre) {
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-wrap: normal;
+  }
+
+  .tool-content :where(p, li) > code {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}

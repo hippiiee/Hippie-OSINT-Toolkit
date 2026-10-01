@@ -257,9 +257,9 @@ Response:
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-6 sm:grid-cols-2">
-          <div className="col-span-2 flex items-center space-x-4">
-            <Skeleton className="h-20 w-20 rounded-full" />
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <div className="col-span-full flex items-center space-x-4">
+            <Skeleton className="h-16 w-16 shrink-0 sm:h-20 sm:w-20 rounded-full" />
             <div>
               <Skeleton className="h-6 w-40 mb-2" />
               <Skeleton className="h-4 w-32" />
@@ -277,7 +277,7 @@ Response:
             <Skeleton className="h-4 w-3/4 mb-2" />
             <Skeleton className="h-4 w-5/6" />
           </div>
-          <div className="col-span-2">
+          <div className="col-span-full">
             <h3 className="font-semibold mb-2">About</h3>
             <Skeleton className="h-4 w-full mb-2" />
             <Skeleton className="h-4 w-5/6 mb-2" />
@@ -297,8 +297,8 @@ Response:
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-6 sm:grid-cols-2">
-          <div className="col-span-2">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <div className="col-span-full">
             <Skeleton className="h-6 w-40 mb-2" />
             <Skeleton className="h-4 w-64" />
           </div>
@@ -412,9 +412,9 @@ Response:
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-0">
-                <div className="grid gap-6 sm:grid-cols-2">
-                  <div className="col-span-2 flex items-center space-x-4">
-                    <Avatar className="h-20 w-20 border-4 border-white shadow-md">
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                  <div className="col-span-full flex items-center space-x-4">
+                    <Avatar className="h-16 w-16 shrink-0 sm:h-20 sm:w-20 border-4 border-white shadow-md">
                       {profileResults.profile.avatar ? (
                         <AvatarImage src={profileResults.profile.avatar} alt={profileResults.profile.nickname} />
                       ) : (
@@ -447,33 +447,33 @@ Response:
                   </div>
                   <div>
                     <h3 className="font-semibold mb-2">Statistics</h3>
-                    <div className="grid grid-cols-2 gap-4 mb-4">
-                      <div className="flex flex-col items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div className="grid grid-cols-[repeat(auto-fit,minmax(8rem,1fr))] gap-4 mb-4 sm:grid-cols-[repeat(auto-fit,minmax(9rem,1fr))]">
+                      <div className="flex flex-col items-center min-w-0 p-2 sm:p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                         <Users className="h-5 w-5 text-primary mb-1" />
-                        <span className="text-xl font-bold">{profileResults.profile.stats.followers}</span>
+                        <span className="text-lg font-bold tabular-nums sm:text-xl">{profileResults.profile.stats.followers}</span>
                         <span className="text-xs text-gray-500">Followers</span>
                       </div>
-                      <div className="flex flex-col items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <div className="flex flex-col items-center min-w-0 p-2 sm:p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                         <Heart className="h-5 w-5 text-primary mb-1" />
-                        <span className="text-xl font-bold">{profileResults.profile.stats.hearts}</span>
+                        <span className="text-lg font-bold tabular-nums sm:text-xl">{profileResults.profile.stats.hearts}</span>
                         <span className="text-xs text-gray-500">Likes</span>
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="flex flex-col items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div className="grid grid-cols-[repeat(auto-fit,minmax(8rem,1fr))] gap-4 sm:grid-cols-[repeat(auto-fit,minmax(9rem,1fr))]">
+                      <div className="flex flex-col items-center min-w-0 p-2 sm:p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                         <Video className="h-5 w-5 text-primary mb-1" />
-                        <span className="text-xl font-bold">{profileResults.profile.stats.videos}</span>
+                        <span className="text-lg font-bold tabular-nums sm:text-xl">{profileResults.profile.stats.videos}</span>
                         <span className="text-xs text-gray-500">Videos</span>
                       </div>
-                      <div className="flex flex-col items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <div className="flex flex-col items-center min-w-0 p-2 sm:p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                         <Users className="h-5 w-5 text-primary mb-1" />
-                        <span className="text-xl font-bold">{profileResults.profile.stats.following}</span>
+                        <span className="text-lg font-bold tabular-nums sm:text-xl">{profileResults.profile.stats.following}</span>
                         <span className="text-xs text-gray-500">Following</span>
                       </div>
                     </div>
                   </div>
                   {profileResults.profile.about && profileResults.profile.about !== "User has no about" && (
-                    <div className="col-span-2">
+                    <div className="col-span-full">
                       <h3 className="font-semibold mb-2">About</h3>
                       <p>{profileResults.profile.about}</p>
                     </div>
