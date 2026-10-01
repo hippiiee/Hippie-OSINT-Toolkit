@@ -438,7 +438,7 @@ Response:
                       <Hash className="inline mr-2 h-4 w-4 text-primary" />
                       User ID: <span className="font-mono">{profileResults.profile.userId}</span>
                     </p>
-                    {profileResults.profile.region && (
+                    {profileResults.profile.region?.trim() && (
                       <p>
                         <Globe className="inline mr-2 h-4 w-4 text-primary" />
                         Region: {profileResults.profile.region}
@@ -504,7 +504,9 @@ Response:
                             nickname: profileResults.profile.nickname,
                             userId: profileResults.profile.userId,
                             accountCreated: profileResults.profile.accountCreated,
-                            region: profileResults.profile.region,
+                            ...(profileResults.profile.region?.trim()
+                              ? { region: profileResults.profile.region }
+                              : {}),
                             language: profileResults.profile.language,
                             stats: profileResults.profile.stats,
                           },
