@@ -7,6 +7,7 @@ services:
       args:
         - NODE_ENV=production
         - NEXT_PUBLIC_BACKEND_API=http://localhost:5000
+        - NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL:-https://osint.hippie.cat}
     ports:
       - "3000:3000"
     depends_on:

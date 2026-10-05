@@ -1,6 +1,9 @@
 {
-  "name": "HippieOSINTToolkit",
+  "name": "Hippie OSINT Toolkit (HOT)",
   "short_name": "HOT",
+  "description": "Free, open-source intelligence tools and guides.",
+  "lang": "en",
+  "start_url": "/",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",

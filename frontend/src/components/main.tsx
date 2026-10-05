@@ -3,27 +3,30 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { Globe, ImageIcon, Users, Menu, X, Moon, Sun, Search, ExternalLink, Sparkles, Bitcoin, Send, Shield } from "lucide-react"
-import { FaGithub as Github, FaReddit, FaTiktok, FaMastodon, FaGoogle, FaDiscord, FaTelegram, FaBitcoin, FaEthereum } from "react-icons/fa"
+import Link from "next/link"
+import Image from "next/image"
+import dynamic from "next/dynamic"
+import type { ToolSlug } from "@/lib/seo"
+import { Globe, ImageIcon, Users, Menu, X, Moon, Sun, Search, ExternalLink, Sparkles, Bitcoin, Shield } from "lucide-react"
+import { FaGithub as Github, FaReddit, FaTiktok, FaMastodon, FaGoogle, FaDiscord, FaTelegram } from "react-icons/fa"
 const FaGithub = Github
-import ImageSearch from "./image-search"
-import DomainTools from "./domain-tools"
-import GitHubTools from "./social_media/github"
-import RedditTools from "./social_media/reddit"
-import MastodonTools from "./social_media/mastodon"
-import TikTokTools from "./social_media/tiktok"
-import GoogleTools from "./social_media/google"
-import DiscordTools from "./social_media/discord"
-import TelegramTools from "./social_media/telegram"
-import IpTools from "./network/ip"
-import CryptoTools from "./network/crypto"
+const ImageSearch = dynamic(() => import("./image-search"))
+const DomainTools = dynamic(() => import("./domain-tools"))
+const GitHubTools = dynamic(() => import("./social_media/github"))
+const RedditTools = dynamic(() => import("./social_media/reddit"))
+const MastodonTools = dynamic(() => import("./social_media/mastodon"))
+const TikTokTools = dynamic(() => import("./social_media/tiktok"))
+const GoogleTools = dynamic(() => import("./social_media/google"))
+const DiscordTools = dynamic(() => import("./social_media/discord"))
+const TelegramTools = dynamic(() => import("./social_media/telegram"))
+const IpTools = dynamic(() => import("./network/ip"))
+const CryptoTools = dynamic(() => import("./network/crypto"))
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
-import UsernameSearch from "./username/username"
+const UsernameSearch = dynamic(() => import("./username/username"))
 import { useTheme } from "next-themes"
-import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 
 interface ToolItem {
@@ -33,12 +36,10 @@ interface ToolItem {
   description: string
 }
 
-export default function HippieOSINTToolkit() {
-  const [selectedTool, setSelectedTool] = useState<string | null>(null)
+export default function HippieOSINTToolkit({ selectedTool = null }: { selectedTool?: ToolSlug | null }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
   const { theme, setTheme } = useTheme()
-  const router = useRouter()
 
   useEffect(() => {
     setMounted(true)
@@ -101,24 +102,28 @@ export default function HippieOSINTToolkit() {
         return (
           <div className="max-w-6xl mx-auto">
             <div className="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30 rounded-2xl p-8 mb-8 text-center shadow-sm">
-              <img
+              <Image
                 src="/hippie-osint-toolkit.png"
                 alt="Hippie OSINT Toolkit Logo"
+                width={128}
+                height={128}
+                sizes="128px"
+                preload
                 className="w-32 h-32 mx-auto mb-6 drop-shadow-md"
               />
-              <h2 className="text-3xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600 dark:from-purple-400 dark:to-indigo-400">
-                Welcome to Hippie OSINT Toolkit
-              </h2>
+              <h1 className="text-3xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600 dark:from-purple-400 dark:to-indigo-400">
+                Hippie OSINT Toolkit (HOT)
+              </h1>
               <p className="text-gray-700 dark:text-gray-300 mb-4 max-w-2xl mx-auto">
-                A collection of carefully selected OSINT tools for investigations and CTFs, all in one place.
+                Free, open-source intelligence (OSINT) tools and practical guides for investigations and CTFs.
+                Research domains, search usernames, analyze images, and explore public social media information in one place.
               </p>
               <div className="flex justify-center gap-3 mt-6">
                 <Button
-                  onClick={() => selectTool("domain")}
+                  asChild
                   className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
                 >
-                  <Search className="mr-2 h-4 w-4" />
-                  Start Exploring
+                  <Link href="/tools/domain" prefetch={false}><Search className="mr-2 h-4 w-4" />Start Exploring</Link>
                 </Button>
                 <Button variant="outline" asChild>
                   <a
@@ -137,10 +142,11 @@ export default function HippieOSINTToolkit() {
             <div className="mb-8">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {mainTools.map((tool) => (
-                  <div
+                  <Link
                     key={tool.tool}
+                    href={`/tools/${tool.tool}`}
+                    prefetch={false}
                     className="bg-gray-100 dark:bg-gray-800/80 rounded-xl p-6 shadow-sm hover:shadow-md transition-all cursor-pointer border border-gray-200 dark:border-gray-700 hover:border-purple-200 dark:hover:border-purple-800/50"
-                    onClick={() => selectTool(tool.tool)}
                   >
                     <div className="flex items-center mb-3">
                       <div className="bg-white dark:bg-gray-900 p-2 rounded-lg mr-3 shadow-sm">
@@ -149,7 +155,7 @@ export default function HippieOSINTToolkit() {
                       <h3 className="font-semibold text-lg">{tool.name}</h3>
                     </div>
                     <p className="text-gray-700 dark:text-gray-300 text-sm">{tool.description}</p>
-                  </div>
+                  </Link>
                 ))}
               </div>
 
@@ -160,10 +166,11 @@ export default function HippieOSINTToolkit() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {socialTools.map((tool) => (
-                  <div
+                  <Link
                     key={tool.tool}
+                    href={`/tools/${tool.tool}`}
+                    prefetch={false}
                     className="bg-gray-100 dark:bg-gray-800/80 rounded-xl p-6 shadow-sm hover:shadow-md transition-all cursor-pointer border border-gray-200 dark:border-gray-700 hover:border-purple-200 dark:hover:border-purple-800/50"
-                    onClick={() => selectTool(tool.tool)}
                   >
                     <div className="flex items-center mb-3">
                       <div className="bg-white dark:bg-gray-900 p-2 rounded-lg mr-3 shadow-sm">
@@ -172,7 +179,7 @@ export default function HippieOSINTToolkit() {
                       <h3 className="font-semibold text-lg">{tool.name}</h3>
                     </div>
                     <p className="text-gray-700 dark:text-gray-300 text-sm">{tool.description}</p>
-                  </div>
+                  </Link>
                 ))}
               </div>
 
@@ -220,25 +227,10 @@ export default function HippieOSINTToolkit() {
     setIsSidebarOpen(!isSidebarOpen)
   }
 
-  const selectTool = (tool: string) => {
-    setSelectedTool(tool)
-    setIsSidebarOpen(false)
-  }
-
   const handleThemeToggle = () => {
     const newTheme = theme === "dark" ? "light" : "dark"
     setTheme(newTheme)
     localStorage.setItem("theme", newTheme)
-  }
-
-  const handleTitleClick = (e: React.MouseEvent) => {
-    e.preventDefault()
-    setSelectedTool(null)
-    router.push("/")
-  }
-
-  if (!mounted) {
-    return null
   }
 
   return (
@@ -250,13 +242,12 @@ export default function HippieOSINTToolkit() {
             <Button variant="ghost" size="icon" className="mr-2 shrink-0 md:hidden" onClick={toggleSidebar} aria-label={isSidebarOpen ? "Close navigation" : "Open navigation"} aria-expanded={isSidebarOpen} aria-controls="tool-navigation">
               {isSidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
-            <a
+            <Link
               href="/"
-              onClick={handleTitleClick}
               className="min-w-0 truncate text-base sm:text-xl md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600 dark:from-purple-400 dark:to-indigo-400 hover:opacity-90 transition-all duration-300"
             >
               Hippie OSINT Toolkit
-            </a>
+            </Link>
             {selectedTool && (
               <div className="hidden md:flex items-center ml-4">
                 <Separator orientation="vertical" className="h-6 mx-2" />
@@ -276,11 +267,11 @@ export default function HippieOSINTToolkit() {
                   aria-label="Toggle theme"
                   className="transition-all duration-300"
                 >
-                  {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                  {mounted && theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Toggle {theme === "dark" ? "light" : "dark"} mode</p>
+                <p>Toggle {mounted && theme === "dark" ? "light" : "dark"} mode</p>
               </TooltipContent>
             </Tooltip>
 
@@ -329,10 +320,12 @@ export default function HippieOSINTToolkit() {
                       <Button
                         variant={selectedTool === tool.tool ? "secondary" : "ghost"}
                         className="w-full justify-start mb-1 font-normal"
-                        onClick={() => selectTool(tool.tool)}
+                        asChild
                       >
-                        <tool.icon className="mr-2 h-4 w-4" />
-                        {tool.name}
+                        <Link href={`/tools/${tool.tool}`} prefetch={false} onClick={() => setIsSidebarOpen(false)} aria-current={selectedTool === tool.tool ? 'page' : undefined}>
+                          <tool.icon className="mr-2 h-4 w-4" />
+                          {tool.name}
+                        </Link>
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent side="right">
@@ -353,10 +346,12 @@ export default function HippieOSINTToolkit() {
                         <Button
                           variant={selectedTool === tool.tool ? "secondary" : "ghost"}
                           className="w-full justify-start mb-1 font-normal"
-                          onClick={() => selectTool(tool.tool)}
+                          asChild
                         >
-                          <tool.icon className="mr-2 h-4 w-4" />
-                          {tool.name}
+                          <Link href={`/tools/${tool.tool}`} prefetch={false} onClick={() => setIsSidebarOpen(false)} aria-current={selectedTool === tool.tool ? 'page' : undefined}>
+                            <tool.icon className="mr-2 h-4 w-4" />
+                            {tool.name}
+                          </Link>
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent side="right">
@@ -394,4 +389,3 @@ export default function HippieOSINTToolkit() {
     </TooltipProvider>
   )
 }
-

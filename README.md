@@ -58,6 +58,21 @@ To use the base ports (3000 and 5000) without the local override, run
 
 ## Contributing
 
+### Search engine metadata
+
+The frontend serves the homepage and each tool at `/tools/<tool>` as rendered
+HTML, with unique titles, descriptions and canonical links. It also provides
+`/sitemap.xml`, `/robots.txt`, website structured data and a sharing image.
+Tool routes and their descriptions are defined in `frontend/src/lib/seo.ts`.
+
+Set `NEXT_PUBLIC_SITE_URL` to your public origin before building if you host HOT
+on a different domain (the default is `https://osint.hippie.cat`). Rebuild the
+frontend after changing it. For local development, add it to
+`frontend/.env.local`; Docker Compose reads it from the root `.env`.
+After deploying, submit `/sitemap.xml` in Google Search Console and Bing
+Webmaster Tools, and inspect the homepage and tool URLs for indexing.
+Search engines decide the final snippet and when changes appear in results.
+
 TikTok profile lookup reads the public profile page directly, with no API key.
 The former `nopean.click` provider is no longer used. Fields TikTok does not
 publish (such as region on some profiles) remain blank or show `Unknown`.
