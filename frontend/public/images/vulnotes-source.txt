@@ -1,0 +1,6 @@
+Vulnotes brand logo, reused at the brand owner's request.
+Source: https://www.thehacker.recipes/images/sponsors/vulnotes.svg
+Brand website: https://vulnotes.com/
+Light theme: vulnotes-light.svg preserves the supplied full logo.
+Dark theme: vulnotes-dark.svg removes the dark wordmark outline for contrast.
+Both variants preserve the original mascot, lettering paths and brand colors.

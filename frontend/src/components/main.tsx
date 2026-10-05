@@ -7,6 +7,7 @@ import Link from "next/link"
 import Image from "next/image"
 import dynamic from "next/dynamic"
 import type { ToolSlug } from "@/lib/seo"
+import VulnotesPromotion from "./vulnotes-promotion"
 import { Globe, ImageIcon, Users, Menu, X, Moon, Sun, Search, ExternalLink, Sparkles, Bitcoin, Shield } from "lucide-react"
 import { FaGithub as Github, FaReddit, FaTiktok, FaMastodon, FaGoogle, FaDiscord, FaTelegram } from "react-icons/fa"
 const FaGithub = Github
@@ -382,7 +383,9 @@ export default function HippieOSINTToolkit({ selectedTool = null }: { selectedTo
 
           {/* Main content */}
           <main className="tool-content min-w-0 flex-1 p-4 md:p-6 overflow-auto bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-all duration-300">
+            {selectedTool && <VulnotesPromotion />}
             {renderTool()}
+            {!selectedTool && <VulnotesPromotion detailed />}
           </main>
         </div>
       </div>
